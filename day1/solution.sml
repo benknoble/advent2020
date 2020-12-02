@@ -1,13 +1,14 @@
 structure Solution = struct
   val target = 2020
-  fun part1' entries =
+  fun solve n entries =
     let
-      val sums = ListXProd.map (fn (a,b) => {a=a, b=b, sum=a+b}) (entries, entries)
+      val sums = List'.combs_of op+ 0 (List'.rep n entries)
       val matches_target =
         (* if this fails, there's an issue *)
-        Option.valOf (List.find (fn {sum, ...} => sum = target) sums)
+        Option.valOf (List.find (fn {res, ...} => res = target) sums)
     in
-      (#a matches_target) * (#b matches_target)
+      List.foldl op* 1 (#parts matches_target)
     end
+  val part1' = solve 2
   val part1 = part1' o Readers.file_to_int_list
 end
