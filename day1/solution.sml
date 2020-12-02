@@ -11,4 +11,6 @@ structure Solution = struct
     end
   val part1' = solve 2
   val part1 = part1' o Readers.file_to_int_list
+  val part2' = solve 3
+  val part2 = part2' o Readers.file_to_int_list
 end
