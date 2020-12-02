@@ -2,3 +2,4 @@ Group
 is
   $/basis.cm
   readers.sml
+  lambda.sml
