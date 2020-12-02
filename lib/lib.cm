@@ -1,5 +1,7 @@
 Group
 is
   $/basis.cm
+  $/smlnj-lib.cm
   readers.sml
   lambda.sml
+  list.sml
