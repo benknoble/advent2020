@@ -100,3 +100,9 @@ structure PointSet = RedBlackSetFn (struct
   type ord_key = Point.point
   val compare = Point.compare
 end)
+
+
+structure PointMap = RedBlackMapFn (struct
+  type ord_key = Point.point
+  val compare = Point.compare
+end)

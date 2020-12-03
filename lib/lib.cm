@@ -7,3 +7,4 @@ is
   list.sml
   range.sml
   point.sml
+  map.sml
