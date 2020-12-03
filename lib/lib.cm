@@ -5,3 +5,4 @@ is
   readers.sml
   lambda.sml
   list.sml
+  range.sml
