@@ -6,3 +6,4 @@ is
   lambda.sml
   list.sml
   range.sml
+  point.sml
