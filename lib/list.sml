@@ -7,7 +7,7 @@ structure List' = struct
        | [xs] => [xs]
        | xs::ys::tail =>
            List.foldl
-           (ListXProd.map (fn (a, b) => a::b))
+           (ListXProd.map op::)
            (ListXProd.map (fn (a, b) => [a,b]) (xs, ys))
            tail
 
