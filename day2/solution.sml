@@ -12,7 +12,7 @@ structure Solution = struct
 
   fun valid1 {range, letter, password} =
     ((Range.includes range)
-    o (List'.count_matching (fn c' => c' = letter))
+    o (List'.count_matching (Lambda.is letter))
     o String.explode)
     password
 
