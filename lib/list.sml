@@ -17,5 +17,6 @@ structure List' = struct
     (combs xss)
 
   val sum = List.foldl op+ 0
+  val prod = List.foldl op* 1
   fun count_matching f = List.length o (List.filter f)
 end
