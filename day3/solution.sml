@@ -40,4 +40,19 @@ structure Solution = struct
 
   val part1' = count_trees (Point.new 3 1)
   val part1 = part1' o read_map
+
+  fun part2' m =
+    let
+      val slopes =
+        [ Point.new 1 1
+        , Point.new 3 1
+        , Point.new 5 1
+        , Point.new 7 1
+        , Point.new 1 2 ]
+      val trees = List.map (fn s => count_trees s m) slopes
+    in
+      List'.prod trees
+    end
+  val part2 = part2' o read_map
+
 end
