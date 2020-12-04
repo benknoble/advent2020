@@ -31,6 +31,11 @@ structure Point = struct
       ,fy (y, y'))
     end
 
+  fun map2p fx fy p1 p2 =
+    let val (x', y') = map2 fx fy p1 p2
+    in new x' y'
+    end
+
   fun manhattan (p1 : point) (p2 : point) : int =
     let val lineLength = abs o (op -)
         val (dx, dy) = map2 lineLength lineLength p1 p2
