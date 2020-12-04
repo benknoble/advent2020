@@ -34,8 +34,10 @@ structure Solution = struct
 
   val read_map = toboggan_map_reader o Readers.all o Readers.file
 
-  fun part1' m =
+  fun count_trees slope m =
     List'.count_matching (Lambda.is Tree)
-    (terrain_along_slope m (Point.new 3 1) Point.origin)
+    (terrain_along_slope m slope Point.origin)
+
+  val part1' = count_trees (Point.new 3 1)
   val part1 = part1' o read_map
 end
