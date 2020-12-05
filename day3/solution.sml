@@ -2,7 +2,7 @@ structure Solution = struct
   datatype terrain = Space | Tree
 
   val toboggan_map_reader =
-    let val terrain_map = CharMap.insert (CharMap.insert (CharMap.empty, #"#", Tree), #".", Space)
+    let val terrain_map = CharMap.fromList [(#"#", Tree), (#".", Space)]
     in
       Readers.Map.fromString
       PointMap.insert
