@@ -14,7 +14,7 @@ structure Readers = struct
 
     fun fromString insert base_map char_to_terrain =
       let
-        val lines = (List.map (String.explode)) o lines
+        val lines = (List.map String.explode) o lines
         fun acc' acc x y c =
           case char_to_terrain c
             of NONE => acc
