@@ -29,4 +29,7 @@ structure Readers = struct
 
   end
 
+  structure PC = ParserComb
+  val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option = StringCvt.scanString
+
 end
