@@ -30,6 +30,22 @@ structure Readers = struct
   end
 
   structure PC = ParserComb
+
+  val +> = PC.seq
+  infixr 3 +>
+
+  fun skip_ws getc = PC.skipBefore Char.isSpace getc
+
   val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option = StringCvt.scanString
+
+  structure Dict = struct
+
+    fun kvp getc =
+      (PC.wrap
+      ((PC.token Char.isAlpha +> skip_ws (PC.char #":") +> PC.token (not o Char.isSpace))
+      , fn (k, (_, v)) => (Atom.atom k, v)))
+      getc
+
+  end
 
 end
