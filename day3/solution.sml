@@ -2,12 +2,12 @@ structure Solution = struct
   datatype terrain = Space | Tree
 
   val toboggan_map_reader =
-    let val terrain_map = CharMap.fromList [(#"#", Tree), (#".", Space)]
+    let val terrain_map = CharMap'.fromList [(#"#", Tree), (#".", Space)]
     in
       Readers.Map.fromString
       PointMap.insert
       PointMap.empty
-      (fn c => CharMap.find (terrain_map, c))
+      (fn c => CharMap'.find (terrain_map, c))
     end
 
   val find_top_right =

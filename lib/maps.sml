@@ -8,10 +8,10 @@ functor WithMapUtilsFn(structure M: ORD_MAP) = struct
   fun fromList kvs = List.foldl insert' empty kvs
 end
 
-structure CharMap = RedBlackMapFn(struct
+structure CharMap' = RedBlackMapFn(struct
   type ord_key = char
   val compare = Char.compare
 end)
-structure CharMap = WithMapUtilsFn(structure M = CharMap)
+structure CharMap' = WithMapUtilsFn(structure M = CharMap')
 
 structure Dict = WithMapUtilsFn(structure M = AtomMap)
