@@ -31,7 +31,19 @@ structure Readers = struct
 
   structure PC = ParserComb
 
-  val +> = PC.seq
+  structure ParserOps = struct
+    val $> = PC.wrap
+    val +> = PC.seq
+    val || = PC.or
+    val ||| = PC.or'
+    val ?+ = PC.zeroOrMore
+    val ++ = PC.oneOrMore
+    val ?? = PC.option
+    val !! = PC.join
+  end
+
+  open ParserOps
+  infixr 3 $>
   infixr 3 +>
 
   fun skip_ws getc = PC.skipBefore Char.isSpace getc
@@ -41,9 +53,8 @@ structure Readers = struct
   structure Dict = struct
 
     fun kvp getc =
-      (PC.wrap
       ((PC.token Char.isAlpha +> skip_ws (PC.char #":") +> PC.token (not o Char.isSpace))
-      , fn (k, (_, v)) => (Atom.atom k, v)))
+      $> (fn (k, (_, v)) => (Atom.atom k, v)))
       getc
 
   end
