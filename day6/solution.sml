@@ -8,7 +8,11 @@ structure Solution = struct
   type group_answers = CharSet.set
 
   val individual_answers = CharSet.fromList
-  val group_answers = List.foldl CharSet.union CharSet.empty
+  fun group_answers comb xs =
+    case xs
+      of [] => CharSet.empty
+       | [x] => x
+       | h::t => List.foldl comb h t
 
   structure Form = struct
     open Readers.ParserOps
@@ -18,17 +22,17 @@ structure Solution = struct
     infixr 3 ||
 
     fun answerp' getc = (++ (PC.eatChar Char.isLower) $> individual_answers) getc
-    fun groupp' getc =
-      (++ (answerp' +> PC.char #"\n") $> (group_answers o (List.map #1)))
+    fun groupp' comb getc =
+      (++ (answerp' +> PC.char #"\n") $> ((group_answers comb) o (List.map #1)))
       getc
 
     val answerp = prun answerp'
-    val groupp = prun groupp'
+    val groupp = prun o groupp'
 
-    val forms = (List.map groupp) o Readers.blank_line_sep_records
+    fun forms comb = (List.map (groupp comb)) o Readers.blank_line_sep_records
   end
 
   val part1' = List'.sum o (List.map CharSet.numItems)
-  val part1 = part1' o (List.map Option.valOf) o Form.forms o Readers.all o Readers.file
+  val part1 = part1' o (List.map Option.valOf) o (Form.forms CharSet.union) o Readers.all o Readers.file
 
 end
