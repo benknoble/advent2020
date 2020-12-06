@@ -11,19 +11,7 @@ structure Solution = struct
       (++ (Readers.Dict.kvp +> (||| [PC.char #" ", PC.char #"\n"]))
       $> (Dict.fromList o (List.map #1)))
       getc
-    val pp =
-      (List.mapPartial (prun pp'))
-      o (List.map (String.concatWith "\n"))
-      o (List.foldl (fn (line, acc) =>
-          if line = ""
-          then []::acc
-          else case acc
-                 of h::t => if List.null h
-                            then [line ^ "\n"]::t
-                            else (line::h)::t
-                  | [] => [[line ^ "\n"]])
-        [])
-      o (String.fields (Lambda.is #"\n"))
+    val pp = (List.mapPartial (prun pp')) o Readers.blank_line_sep_records
 
     fun yr getc =
       ((digitp +> digitp +> digitp +> digitp +> anything)

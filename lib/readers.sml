@@ -10,6 +10,19 @@ structure Readers = struct
 
   val file_to_int_list = (collect_t Int.fromString) o on_spaces o all o file
 
+  val blank_line_sep_records =
+    (List.map (String.concatWith "\n"))
+    o (List.foldl (fn (line, acc) =>
+        if line = ""
+        then []::acc
+        else case acc
+                of h::t => if List.null h
+                          then [line ^ "\n"]::t
+                          else (line::h)::t
+                | [] => [[line ^ "\n"]])
+      [])
+    o (String.fields (Lambda.is #"\n"))
+
   structure Map = struct
 
     fun fromString insert base_map char_to_terrain =
