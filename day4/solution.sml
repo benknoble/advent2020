@@ -4,13 +4,15 @@ structure Solution = struct
     open Readers.ParserOps
     infixr 3 $>
     infixr 3 +>
+    infixr 3 >>
+    infixr 3 ||
 
     fun pp' getc =
-      (++ (Readers.Dict.kvp +> (||| [Readers.PC.char #" ", Readers.PC.char #"\n"]))
+      (++ (Readers.Dict.kvp +> (||| [PC.char #" ", PC.char #"\n"]))
       $> (Dict.fromList o (List.map #1)))
       getc
     val pp =
-      (List.mapPartial (Readers.prun pp'))
+      (List.mapPartial (prun pp'))
       o (List.map (String.concatWith "\n"))
       o (List.foldl (fn (line, acc) =>
           if line = ""

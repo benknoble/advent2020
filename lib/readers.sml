@@ -29,28 +29,53 @@ structure Readers = struct
 
   end
 
-  structure PC = ParserComb
-
   structure ParserOps = struct
+    structure PC = ParserComb
+
     val $> = PC.wrap
     val +> = PC.seq
+    val >> = PC.bind
     val || = PC.or
     val ||| = PC.or'
     val ?+ = PC.zeroOrMore
     val ++ = PC.oneOrMore
     val ?? = PC.option
     val !! = PC.join
+
+    fun skip_ws getc = PC.skipBefore Char.isSpace getc
+
+    val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option = StringCvt.scanString
+
+    fun anything getc =
+      (?+ (PC.eatChar (Lambda.k true)))
+      getc
+
+    fun stop rest result =
+      if List.null rest
+      then PC.result result
+      else PC.failure
+
+    fun digitp getc = PC.eatChar Char.isDigit getc
+    fun hexdigitp getc = PC.eatChar Char.isHexDigit getc
+    fun decp getc = Int.scan StringCvt.DEC getc
+    fun hexp getc = Int.scan StringCvt.HEX getc
+
+    val mkint = Option.valOf o Int.fromString o String.implode
+    val mkhex = Option.valOf o prun hexp o String.implode
   end
 
-  open ParserOps
-  infixr 3 $>
-  infixr 3 +>
-
-  fun skip_ws getc = PC.skipBefore Char.isSpace getc
-
-  val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option = StringCvt.scanString
+  (* open Readers.ParserOps *)
+  (* infixr 3 $> *)
+  (* infixr 3 +> *)
+  (* infixr 3 >> *)
+  (* infixr 3 || *)
 
   structure Dict = struct
+    open ParserOps
+    infixr 3 $>
+    infixr 3 +>
+    infixr 3 >>
+    infixr 3 ||
 
     fun kvp getc =
       ((PC.token Char.isAlpha +> skip_ws (PC.char #":") +> PC.token (not o Char.isSpace))
