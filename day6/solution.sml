@@ -34,5 +34,6 @@ structure Solution = struct
 
   val part1' = List'.sum o (List.map CharSet.numItems)
   val part1 = part1' o (List.map Option.valOf) o (Form.forms CharSet.union) o Readers.all o Readers.file
+  val part2 = part1' o (List.map Option.valOf) o (Form.forms CharSet.intersection) o Readers.all o Readers.file
 
 end
