@@ -21,8 +21,8 @@ structure Solution = struct
                  of h::t => if List.null h
                             then [line ^ "\n"]::t
                             else (line::h)::t
-                  | [] => [[line ^ "\n"]]
-        ) [])
+                  | [] => [[line ^ "\n"]])
+        [])
       o (String.fields (Lambda.is #"\n"))
   end
 
