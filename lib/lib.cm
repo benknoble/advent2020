@@ -8,3 +8,4 @@ is
   range.sml
   point.sml
   maps.sml
+  dfs.sml
