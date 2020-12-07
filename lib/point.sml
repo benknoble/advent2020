@@ -101,13 +101,13 @@ structure Point = struct
 
 end
 
-structure PointSet = RedBlackSetFn (struct
+structure PointSet = RedBlackSetFn(struct
   type ord_key = Point.point
   val compare = Point.compare
 end)
 
-structure PointMap = RedBlackMapFn (struct
+structure PointMap = RedBlackMapFn(struct
   type ord_key = Point.point
   val compare = Point.compare
 end)
-structure PointMap = WithMapUtilsFn (structure M = PointMap)
+structure PointMap = WithMapUtilsFn(structure M = PointMap)
