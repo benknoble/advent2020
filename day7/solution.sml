@@ -3,22 +3,36 @@ structure Solution = struct
   type contained_in = int * bag
   (* b1 -> [(n, b2), …] means n b1s are contained in b2, &c. *)
   type contained_graph = contained_in list AtomMap.map
+  type contains = int * bag
+  (* b1 -> [(n, b2), …] means n b2s are contained in b1, &c. *)
+  type contains_graph = contains list AtomMap.map
 
   val bag = Atom.atom
   fun contained (n, b) = (n, bag b)
-  fun contained_graph kvs =
+  fun contained_graph (kvs: (bag * contains list) list): contained_graph =
     List.foldl
     (fn ((k, v), m) => AtomMap.insertWith List.@ (m, k, v))
     AtomMap.empty
     kvs
+  val contains_graph: (bag * contains list) list -> contains_graph =
+    (* by a quirk, they have the same representation, so this is fine *)
+    contained_graph
 
-  structure Dfs = DfsFn(struct
+  val contained_to_contains: contained_graph -> contains_graph =
+    contains_graph
+    o List.concat
+    o (List.map (fn (contained, count_containers) =>
+        List.map (fn (n, tainer) => (tainer, [(n, contained)])) count_containers))
+    o AtomMap.listItemsi
+
+  fun neighbors g n = case AtomMap.find (g, n)
+                        of NONE => []
+                         | SOME ns => ns
+  structure ContainedDfs = DfsFn(struct
     type edge = int
     type graph = contained_graph
     structure Node = AtomMap.Key
-    fun neighbors g n = case AtomMap.find (g, n)
-                          of NONE => []
-                           | SOME ns => ns
+    val neighbors = neighbors
     val nodes = AtomMap.listKeys
   end)
 
@@ -64,7 +78,7 @@ structure Solution = struct
     o Readers.all
     o Readers.file
 
-  val part1' = Dfs.NodeSet.numItems o (fn g => Dfs.dfs g (Atom.atom "shiny gold"))
+  val part1' = ContainedDfs.NodeSet.numItems o (fn g => ContainedDfs.dfs g (Atom.atom "shiny gold"))
   val part1 = part1' o Option.valOf o Rules.rulesp o Readers.all o Readers.file
 
 end
