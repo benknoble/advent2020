@@ -13,7 +13,7 @@ structure Code = struct
                    | PcErr of pc * code
 
   fun decode (_, pc, code) =
-    if pc = (IntRedBlackMap.numItems code) + 1
+    if pc = IntRedBlackMap.numItems code
     then SOME HaltOp
     else IntRedBlackMap.find (code, pc)
 
