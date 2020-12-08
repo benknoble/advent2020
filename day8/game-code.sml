@@ -7,6 +7,12 @@ structure Code = struct
   type code = instruction IntRedBlackMap.map (* more efficient than traversing a list *)
   type pc = IntRedBlackMap.Key.ord_key (* = int *)
 
+  fun swap pos new code =
+    IntRedBlackMap.insert
+    ( code
+    , pos
+    , (new (IntRedBlackMap.lookup (code, pos))))
+
   type acc = int
   datatype process = Running of acc * pc * code
                    | Halt of acc
