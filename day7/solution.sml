@@ -81,4 +81,21 @@ structure Solution = struct
   val part1' = ContainedDfs.NodeEdgeSet.numItems o (fn g => ContainedDfs.dfs g (Atom.atom "shiny gold"))
   val part1 = part1' o Option.valOf o Rules.rulesp o Readers.all o Readers.file
 
+  fun part2' (g: contains_graph) =
+    let
+      fun requires' (n, bag) =
+        let
+          val neighbors = neighbors g bag
+        in
+          (n + n * (if List.null neighbors
+                    then 0
+                    else List'.sum (List.map requires' neighbors)))
+        end
+      fun requires (n, bag) = requires' (n, bag) - n
+    in
+      requires (1, Atom.atom "shiny gold")
+    end
+
+  val part2 = part2' o contained_to_contains o Option.valOf o Rules.rulesp o Readers.all o Readers.file
+
 end
