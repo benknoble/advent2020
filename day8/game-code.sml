@@ -2,7 +2,7 @@ structure Code = struct
 
   datatype instruction = Acc of int
                        | Jmp of int
-                       | Nop
+                       | Nop of int
                        | HaltOp
   type code = instruction IntRedBlackMap.map (* more efficient than traversing a list *)
   type pc = IntRedBlackMap.Key.ord_key (* = int *)
@@ -26,7 +26,7 @@ structure Code = struct
     case inst
       of Acc n => acc n p
        | Jmp n => jmp n p
-       | Nop => nop p
+       | Nop _ => nop p
        | HaltOp => halt p
 
   fun step proc =
@@ -62,7 +62,7 @@ structure Code = struct
       $> (fn (inst, n) => case inst
                             of "acc" => Acc n
                              | "jmp" => Jmp n
-                             | "nop" => Nop))
+                             | "nop" => Nop n))
       getc
 
     fun codep getc =
