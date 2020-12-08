@@ -1,0 +1,7 @@
+Group
+is
+  $/basis.cm
+  $/smlnj-lib.cm
+  ../lib/lib.cm
+  game-code.sml
+  solution.sml
