@@ -84,13 +84,7 @@ structure Solution = struct
   fun part2' (g: contains_graph) =
     let
       fun requires' (n, bag) =
-        let
-          val neighbors = neighbors g bag
-        in
-          (n + n * (if List.null neighbors
-                    then 0
-                    else List'.sum (List.map requires' neighbors)))
-        end
+        (n + n * (List'.sum (List.map requires' (neighbors g bag))))
       fun requires (n, bag) = requires' (n, bag) - n
     in
       requires (1, Atom.atom "shiny gold")
