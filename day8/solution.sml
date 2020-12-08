@@ -7,7 +7,7 @@ structure Solution = struct
                if IntRedBlackSet.member (visited, pc)
                then prev_acc
                else break proc' ((IntRedBlackSet.add (visited, pc)), SOME acc)
-           | _ => prev_acc
+           | _ => NONE
     in
       break proc (IntRedBlackSet.empty, NONE)
     end
