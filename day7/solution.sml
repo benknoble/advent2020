@@ -81,15 +81,21 @@ structure Solution = struct
   val part1' = ContainedDfs.NodeEdgeSet.numItems o (fn g => ContainedDfs.dfs g (Atom.atom "shiny gold"))
   val part1 = part1' o Option.valOf o Rules.rulesp o Readers.all o Readers.file
 
-  fun part2' (g: contains_graph) =
-    let
-      fun requires' (n, bag) =
-        (n + n * (List'.sum (List.map requires' (neighbors g bag))))
-      fun requires (n, bag) = requires' (n, bag) - n
-    in
-      requires (1, Atom.atom "shiny gold")
-    end
 
+  (* g really needs to be a contains_graph, or this won't make sense *)
+  fun requires' (g: contains_graph) (n, bag) =
+    (n + n * (List'.sum (List.map (requires' g) (neighbors g bag))))
+  (* requires' overcounts: it includes the count of each bag that it adds,
+   * including the start, while we often want to know how many bags are required
+   * *aside* from the n of bag we already have.
+   *
+   * subtracting n in requires' won't work: then you just get n*(…) and it
+   * under-counts (especially for the contained bags)
+   *
+   * so we subtract it here *)
+  fun requires g (n, bag) = requires' g (n, bag) - n
+
+  fun part2' g = requires g (1, Atom.atom "shiny gold")
   val part2 = part2' o contained_to_contains o Option.valOf o Rules.rulesp o Readers.all o Readers.file
 
 end
