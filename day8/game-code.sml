@@ -3,31 +3,38 @@ structure Code = struct
   datatype instruction = Acc of int
                        | Jmp of int
                        | Nop
+                       | HaltOp
   type code = instruction IntRedBlackMap.map (* more efficient than traversing a list *)
   type pc = IntRedBlackMap.Key.ord_key (* = int *)
 
   type acc = int
   datatype process = Running of acc * pc * code
+                   | Halt of acc
                    | PcErr of pc * code
 
-  fun decode (_, pc, code) = IntRedBlackMap.find (code, pc)
+  fun decode (_, pc, code) =
+    if pc = (IntRedBlackMap.numItems code) + 1
+    then SOME HaltOp
+    else IntRedBlackMap.find (code, pc)
 
-  fun acc n (acc, pc, code) = (acc + n, pc + 1, code)
-  fun jmp n (acc, pc, code) = (acc, pc + n, code)
-  fun nop (acc, pc, code) = (acc, pc + 1, code)
+  fun acc n (acc, pc, code) = Running (acc + n, pc + 1, code)
+  fun jmp n (acc, pc, code) = Running (acc, pc + n, code)
+  fun nop (acc, pc, code) = Running (acc, pc + 1, code)
+  fun halt (acc, _, _) = Halt acc
 
   fun eval inst p =
     case inst
       of Acc n => acc n p
        | Jmp n => jmp n p
        | Nop => nop p
+       | HaltOp => halt p
 
   fun step proc =
     case proc
       of Running (p as (acc, pc, code)) =>
            (case decode p
               of NONE => PcErr (pc, code)
-               | SOME inst => Running (eval inst p))
+               | SOME inst => eval inst p)
        | _ => proc
 
   fun load code = Running (0, 0, code)
@@ -40,6 +47,7 @@ structure Code = struct
   fun stopped proc =
     case proc
       of Running _ => false
+       | Halt _ => true
        | PcErr _ => true
 
   structure Reader = struct
