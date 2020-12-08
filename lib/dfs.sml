@@ -14,37 +14,45 @@ functor DfsFn(
     val isEmpty = List.null
   end
 
-  (* could just as easily use a Set with member => Discovered, but the NONE case
-   * in NodeMap.find below would have to be handled *)
   datatype color = Discovered | Undiscovered
   structure NodeMap = RedBlackMapFn(Node)
   type kmap = color NodeMap.map
-  structure NodeSet = RedBlackSetFn(Node)
+  structure NodeEdgeSet = RedBlackSetFn(struct
+    type ord_key = edge * Node.ord_key
+    fun compare ((_, x), (_, y)) = Node.compare (x, y)
+  end)
 
-  fun dfs g n : NodeSet.set =
+  fun dfs g n : NodeEdgeSet.set =
     let
+      datatype edge' = Edge of edge | NonEdge
       val init = (List.foldl (fn (n, m) => NodeMap.insert (m, n, Undiscovered)) NodeMap.empty) o nodes
       fun dfs' k s acc =
         case Stack.pop s
           of NONE => acc
-           | SOME (x, s') =>
+           | SOME ((e, x), s') =>
                let
                  val k' = NodeMap.insert (k, x, Discovered)
                  (* skip n in the result *)
-                 val acc' = if Node.compare (x, n) = EQUAL
-                            then acc
-                            else NodeSet.add (acc, x)
+                 val acc' = case e
+                              of NonEdge => acc
+                               | Edge e' => NodeEdgeSet.add (acc, (e', x))
                in
                  case NodeMap.find (k, x)
                    of NONE => dfs' k' s' acc'
                     | SOME Discovered => dfs' k s' acc
                     | SOME Undiscovered =>
-                        let val s'' = List.foldl Stack.push s' (List.map #2 (neighbors g x))
-                        in dfs' k' s'' acc'
+                        let
+                          val s'' =
+                            List.foldl
+                            Stack.push
+                            s'
+                            (List.map (fn (e, n') => (Edge e, n')) (neighbors g x))
+                        in
+                          dfs' k' s'' acc'
                         end
                end
     in
-      dfs' (init g) (Stack.push (n, Stack.empty)) NodeSet.empty
+      dfs' (init g) (Stack.push ((NonEdge, n), Stack.empty)) NodeEdgeSet.empty
     end
 
 end

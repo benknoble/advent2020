@@ -78,7 +78,7 @@ structure Solution = struct
     o Readers.all
     o Readers.file
 
-  val part1' = ContainedDfs.NodeSet.numItems o (fn g => ContainedDfs.dfs g (Atom.atom "shiny gold"))
+  val part1' = ContainedDfs.NodeEdgeSet.numItems o (fn g => ContainedDfs.dfs g (Atom.atom "shiny gold"))
   val part1 = part1' o Option.valOf o Rules.rulesp o Readers.all o Readers.file
 
 end
