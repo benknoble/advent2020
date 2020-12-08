@@ -2,7 +2,7 @@ structure Solution = struct
   fun part1' proc =
     let
       fun break proc (visited, prev_acc) =
-        case (Code.step proc)
+        case Code.step proc
           of proc' as (Code.Running (acc, pc, _)) =>
                if IntRedBlackSet.member (visited, pc)
                then prev_acc
