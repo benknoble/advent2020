@@ -64,9 +64,9 @@ structure Code = struct
     infixr 3 ||
 
     fun instp getc =
-      ((||| ([ PC.string "acc" $> Lambda.k Acc
-             , PC.string "jmp" $> Lambda.k Jmp
-             , PC.string "nop" $> Lambda.k Nop])
+      ((||| [ PC.string "acc" $> Lambda.k Acc
+            , PC.string "jmp" $> Lambda.k Jmp
+            , PC.string "nop" $> Lambda.k Nop ]
         +> decp)
       $> (fn (inst, n) => inst n))
       getc
