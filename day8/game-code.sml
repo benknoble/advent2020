@@ -64,11 +64,11 @@ structure Code = struct
     infixr 3 ||
 
     fun instp getc =
-      ((||| (List.map PC.string ["acc", "jmp", "nop"]) +> decp)
-      $> (fn (inst, n) => case inst
-                            of "acc" => Acc n
-                             | "jmp" => Jmp n
-                             | "nop" => Nop n))
+      ((||| ([ PC.string "acc" $> Lambda.k Acc
+             , PC.string "jmp" $> Lambda.k Jmp
+             , PC.string "nop" $> Lambda.k Nop])
+        +> decp)
+      $> (fn (inst, n) => inst n))
       getc
 
     fun codep getc =
