@@ -3,6 +3,7 @@ structure Point = struct
   val origin : point = {x=0, y=0}
 
   fun new (x : int) (y : int) : point = {x=x, y=y}
+  fun new' (x, y) = new x y
 
   fun map (f : int * int -> 'a) (p : point) : 'a =
     let val {x, y} = p
