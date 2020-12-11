@@ -102,4 +102,47 @@ structure Solution = struct
 
   val part1 = part1' o read_map
 
+  fun visible seats p =
+    let
+      fun visible' seats p dir =
+        case PointMap.find (seats, p)
+          of NONE => NONE
+           | SOME Floor => visible' seats (Point.move p dir) dir
+           | s => s
+      val nps = List.map (fn dir => (Point.move p dir, dir)) directions
+    in
+      List.mapPartial (fn (p, dir) => visible' seats p dir) nps
+    end
+
+  fun next' seats =
+    PointMap.mapi (fn (p, s) =>
+      case s
+        of Floor => Floor
+         | Empty => if count_occupied (visible seats p) = 0
+                    then Occupied
+                    else Empty
+         | Occupied => if count_occupied (visible seats p) >= 5
+                       then Empty
+                       else Occupied)
+    seats
+
+  fun part2' seats =
+    let
+      fun until_stable seats prev =
+        if equivalent_seat_maps (seats, prev)
+        then seats
+        else
+          let val next = next' seats
+          in
+            (* prints next; *)
+            (* print "\n\n"; *)
+            (* OS.Process.sleep (Time.fromMilliseconds 100); *)
+            until_stable next seats
+          end
+    in
+      count_occupied (PointMap.listItems (until_stable seats PointMap.empty))
+    end
+
+  val part2 = part2' o read_map
+
 end
