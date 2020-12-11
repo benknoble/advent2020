@@ -41,16 +41,19 @@ structure Solution = struct
       print (str ^ "\n")
     end
 
+  val directions =
+    List.map Point.new' [ (~1, ~1)
+                        , (~1, 0)
+                        , (~1, 1)
+                        , (0, ~1)
+                        , (0, 1)
+                        , (1, ~1)
+                        , (1, 0)
+                        , (1, 1) ]
+
   fun neighbors seats p =
     let
-      val nps = List.map (Point.move p o Point.new') [ (~1, ~1)
-                                                     , (~1, 0)
-                                                     , (~1, 1)
-                                                     , (0, ~1)
-                                                     , (0, 1)
-                                                     , (1, ~1)
-                                                     , (1, 0)
-                                                     , (1, 1) ]
+      val nps = List.map (Point.move p) directions
     in
       List.mapPartial (fn p => PointMap.find (seats, p)) nps
     end
