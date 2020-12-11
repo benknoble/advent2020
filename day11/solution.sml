@@ -14,6 +14,33 @@ structure Solution = struct
     end
   val read_map = seat_map_reader o Readers.all o Readers.file
 
+  fun prints seats =
+    let
+      fun to_c s = case s
+                     of Floor => #"."
+                      | Empty => #"L"
+                      | Occupied => #"#"
+      val ps = PointMap.listKeys seats
+      val {x=max_x, y=max_y} =
+        List.foldl (fn (p1, p2) => case Point.compare (p1, p2)
+                                     of EQUAL => p1
+                                      | LESS => p2
+                                      | GREATER => p1)
+        Point.origin
+        ps
+      val xs = Range.toList {min=0, max=max_x}
+      val ys = Range.toList {min=0, max=max_y}
+      val str =
+        String.concatWith "\n"
+        (List.map (fn y =>
+          String.implode
+          (List.map (fn x => to_c (PointMap.lookup (seats, Point.new x y)))
+          xs))
+        ys)
+    in
+      print (str ^ "\n")
+    end
+
   fun neighbors seats p =
     let
       val nps = List.map (Point.move p o Point.new') [ (~1, ~1)
