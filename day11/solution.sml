@@ -85,7 +85,14 @@ structure Solution = struct
       fun until_stable seats prev =
         if equivalent_seat_maps (seats, prev)
         then seats
-        else until_stable (next seats) seats
+        else
+          let val next = next seats
+          in
+            (* prints next; *)
+            (* print "\n\n"; *)
+            (* OS.Process.sleep (Time.fromMilliseconds 100); *)
+            until_stable next seats
+          end
     in
       count_occupied (PointMap.listItems (until_stable seats PointMap.empty))
     end
