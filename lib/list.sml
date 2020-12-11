@@ -19,4 +19,13 @@ structure List' = struct
   val sum = List.foldl op+ 0
   val prod = List.foldl op* 1
   fun count_matching f = List.length o (List.filter f)
+
+  fun taking_while f =
+    List.rev
+    o (fn (chain, acc) => (List.rev chain)::acc)
+    o (List.foldl
+      (fn (x, (chain, acc)) => if f x
+                               then (x::chain, acc)
+                               else ([], (List.rev chain)::acc))
+      ([], []))
 end
