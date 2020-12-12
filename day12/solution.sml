@@ -99,4 +99,42 @@ structure Solution = struct
 
   val part1 = (Option.map part1') o Navigation.nav o Readers.all o Readers.file
 
+  type boat' = {waypoint: Point.point, pos: Point.point}
+  val init' = {waypoint=Point.new 10 1, pos=Point.origin}
+
+  fun rotateL' {x, y} r =
+    case r
+      of Quarter => Point.new (~y) x
+       | Half => Point.new (~x) (~y)
+       | ThreeQuarter => Point.new y (~x)
+
+  fun rotateR' w r =
+    rotateL' w (case r
+                  of Quarter => ThreeQuarter
+                   | Half => Half
+                   | ThreeQuarter => Quarter)
+
+  fun step' {waypoint, pos} a =
+    case a
+      of N y => {waypoint=Point.move waypoint (Point.new 0 y), pos=pos}
+       | S y => {waypoint=Point.move waypoint (Point.new 0 (~y)), pos=pos}
+       | E x => {waypoint=Point.move waypoint (Point.new x 0), pos=pos}
+       | W x => {waypoint=Point.move waypoint (Point.new (~x) 0), pos=pos}
+       | L r => {waypoint=rotateL' waypoint r, pos=pos}
+       | R r => {waypoint=rotateR' waypoint r, pos=pos}
+       | F n => { waypoint=waypoint
+                , pos=Point.map2p (fn (wx, px) => px + n * wx)
+                                  (fn (wy, py) => py + n * wy)
+                                  waypoint
+                                  pos }
+
+  val run' = List.foldl (fn (a, b) => step' b a)
+
+  fun part2' nav =
+    let val {pos, ...} = run' init' nav
+    in Point.manhattan pos Point.origin
+    end
+
+  val part2 = (Option.map part2') o Navigation.nav o Readers.all o Readers.file
+
 end
