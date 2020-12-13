@@ -49,4 +49,16 @@ structure Solution = struct
     o Readers.all
     o Readers.file
 
+  fun congruences buses =
+    List.map (fn (i, v) => (~i, Option.valOf v))
+    (List.filter (Option.isSome o #2)
+    (List'.with_indices buses))
+
+  val part2' = Math'.crt o congruences
+  val part2 =
+    Option.map (part2' o #2)
+    o Timetable.timetable
+    o Readers.all
+    o Readers.file
+
 end
