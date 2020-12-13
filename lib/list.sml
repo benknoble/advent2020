@@ -28,4 +28,7 @@ structure List' = struct
                                then (x::chain, acc)
                                else ([], (List.rev chain)::acc))
       ([], []))
+
+  fun with_indices xs =
+    ListPair.zip (List.tabulate (List.length xs, Lambda.id), xs)
 end
