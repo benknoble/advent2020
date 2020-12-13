@@ -15,7 +15,7 @@ structure Solution = struct
 
     fun idsp getc =
       ((idp +> ++ (PC.char #"," +> idp))
-      $> (fn (first, rest) => List.mapPartial Lambda.id (first::(List.map #2 rest))))
+      $> (fn (first, rest) => first::(List.map #2 rest)))
       getc
 
     fun timetablep getc = (earliestp +> idsp) getc
@@ -44,7 +44,7 @@ structure Solution = struct
     o (next_bus earliest)
 
   val part1 =
-    (Option.mapPartial (fn (earliest, buses) => part1' earliest buses))
+    (Option.mapPartial (fn (earliest, buses) => part1' earliest (List.mapPartial Lambda.id buses)))
     o Timetable.timetable
     o Readers.all
     o Readers.file
