@@ -21,6 +21,27 @@ structure Solution = struct
         IntInf.orb (onesm, value))
     end
 
+  fun mask_address addr ({ones, xs, ...}: mask) =
+    let
+      val onesm = onem ones
+      val addr' = IntInf.orb (onesm, addr)
+      (* doubles a single addr into a list of two *)
+      fun mask_float pos addr =
+        [ IntInf.orb (onem [pos], addr) (* set a one *)
+        , IntInf.andb (zerom [pos], addr) ] (* set a zero *)
+    in
+      List.foldl
+      (* List.concat (List.map f vs) is the idiom for flat-map
+       * since mask_float doubles a value, mapping it over a list creates
+       * sublists of length 2
+       * flat-mapping it turns a list of length n into a list of length 2^n
+       * starting from the first addr' we compute all 2^n (n = List.length xs)
+       * possible addresses from the floating bits *)
+      (fn (x, cur) => List.concat (List.map (mask_float x) cur))
+      [addr']
+      xs
+    end
+
   datatype instruction = Mask of mask
                        | MemWrite of int * value
   type program = instruction list
@@ -31,6 +52,13 @@ structure Solution = struct
 
   fun maskf1 mask mem k v =
     (mask, IntRedBlackMap.insert (mem, k, mask_value v mask))
+
+  fun maskf2 mask mem k v =
+    let val ks = mask_address (IntInf.fromInt k) mask
+    in
+      ( mask
+      , List.foldl (fn (k, mem) => IntRedBlackMap.insert (mem, IntInf.toInt k, v)) mem ks)
+    end
 
   fun step maskf (inst, (mask, mem)) =
     case inst
@@ -84,5 +112,12 @@ structure Solution = struct
     o (run maskf1)
     o load
   val part1 = (Option.map part1') o Docking.prog o Readers.all o Readers.file
+
+  val part2' =
+    (IntRedBlackMap.foldl op+ 0)
+    o #2
+    o (run maskf2)
+    o load
+  val part2 = (Option.map part2') o Docking.prog o Readers.all o Readers.file
 
 end
