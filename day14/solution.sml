@@ -12,7 +12,7 @@ structure Solution = struct
   val zerom: pos_mask -> IntInf.int  =
     IntInf.notb o from_bin o (List.map #1)
 
-  fun apply_mask value ({zeros, ones, ...}: mask) =
+  fun mask_value value ({zeros, ones, ...}: mask) =
     let
       val onesm = onem ones
       val zerosm = zerom zeros
@@ -29,14 +29,16 @@ structure Solution = struct
   val init_mem: mem = IntRedBlackMap.empty
   val init_mask: mask = {zeros=[], ones=[], xs=[]}
 
-  fun step (inst, (mask, mem)) =
+  fun maskf1 mask mem k v =
+    (mask, IntRedBlackMap.insert (mem, k, mask_value v mask))
+
+  fun step maskf (inst, (mask, mem)) =
     case inst
       of Mask mask' => (mask', mem)
-       | MemWrite (k, v) =>
-           (mask, IntRedBlackMap.insert (mem, k, apply_mask v mask))
+       | MemWrite (k, v) => maskf mask mem k v
 
   fun load prog: process = (init_mask, init_mem, prog)
-  fun run (mask, mem, program) = List.foldl step (mask, mem) program
+  fun run maskf (mask, mem, program) = List.foldl (step maskf) (mask, mem) program
 
   structure Docking = struct
     open Readers.ParserOps
@@ -79,7 +81,7 @@ structure Solution = struct
   val part1' =
     (IntRedBlackMap.foldl op+ 0)
     o #2
-    o run
+    o (run maskf1)
     o load
   val part1 = (Option.map part1') o Docking.prog o Readers.all o Readers.file
 
