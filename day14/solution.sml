@@ -2,10 +2,24 @@ structure Solution = struct
 
   type value = IntInf.int
   type mem = value IntRedBlackMap.map
-  type mask = IntInf.int * IntInf.int
+  datatype mask_bit = X | One | Zero
+  type pos_mask = (int * mask_bit) list
+  type mask = {zeros: pos_mask, ones: pos_mask, xs: pos_mask}
 
-  fun apply_mask value (zeros, ones) =
-    IntInf.andb (IntInf.orb (value, ones), zeros)
+  val from_bin = List.foldl (fn (x, acc) => IntInf.pow (2, x) + acc) 0
+  val onem: pos_mask -> IntInf.int =
+    from_bin o (List.map #1)
+  val zerom: pos_mask -> IntInf.int  =
+    IntInf.notb o from_bin o (List.map #1)
+
+  fun apply_mask value ({zeros, ones, ...}: mask) =
+    let
+      val onesm = onem ones
+      val zerosm = zerom zeros
+    in
+      IntInf.andb (zerosm,
+        IntInf.orb (onesm, value))
+    end
 
   datatype instruction = Mask of mask
                        | MemWrite of int * value
@@ -13,6 +27,7 @@ structure Solution = struct
   type process = mask * mem * program
 
   val init_mem: mem = IntRedBlackMap.empty
+  val init_mask: mask = {zeros=[], ones=[], xs=[]}
 
   fun step (inst, (mask, mem)) =
     case inst
@@ -20,7 +35,7 @@ structure Solution = struct
        | MemWrite (k, v) =>
            (mask, IntRedBlackMap.insert (mem, k, apply_mask v mask))
 
-  fun load prog: process = ((0, 0), init_mem, prog)
+  fun load prog: process = (init_mask, init_mem, prog)
   fun run (mask, mem, program) = List.foldl step (mask, mem) program
 
   structure Docking = struct
@@ -35,10 +50,6 @@ structure Solution = struct
       $> (fn (_, (k, (_, (v, _)))) => MemWrite (k, IntInf.fromInt v)))
       getc
 
-    datatype mask_bit = X | One | Zero
-
-    val from_bin = List.foldl (fn (x, acc) => IntInf.pow (2, x) + acc) 0
-
     fun maskp getc =
       ((PC.string "mask = "
         +> (++ (||| [ PC.char #"X" $> Lambda.k X
@@ -46,11 +57,13 @@ structure Solution = struct
                     , PC.char #"0" $> Lambda.k Zero ]))
         +> PC.char #"\n")
       $> (Mask
-          o (fn (zeros, ones) =>
-              ( IntInf.notb (from_bin (List.map #1 zeros))
-              , from_bin (List.map #1 ones)))
-          o List.partition ((Lambda.is Zero) o #2)
-          o List.filter (not o (Lambda.is X) o #2)
+          o (fn pms =>
+              let
+                val (zeros, rest) = List.partition (Lambda.is Zero o #2) pms
+                val (ones, xs) = List.partition (Lambda.is One o #2) rest
+              in
+                {zeros=zeros, ones=ones, xs=xs}
+              end)
           o List'.with_indices
           o List.rev
           o #1
