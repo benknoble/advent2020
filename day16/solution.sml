@@ -120,18 +120,13 @@ structure Solution = struct
         mine::(List.filter (List.all (valid_for_any rules)) nearby)
       val by_field = List'.transpose valid
       val cands = List.map (valid_for_all rules) by_field
-      val fields = Option.map List'.with_indices (solve_set_eqns cands)
-      val starts_with_departure =
-        Option.map
-        (List.filter (String.isPrefix "departure" o #1 o #2))
-        fields
-      val departure_indices = Option.map (List.map #1) starts_with_departure
-      val my_departures =
-        Option.map
-        (List.map (fn i => List.nth (mine, i)))
-        departure_indices
     in
-      Option.map List'.prod my_departures
+      Option.map
+      (List'.prod (* product *)
+      o List.map (fn (i, _) => List.nth (mine, i)) (* my departures *)
+      o List.filter (String.isPrefix "departure" o #1 o #2) (* starts with departure *)
+      o List'.with_indices (* label the fields *))
+      (solve_set_eqns cands)
     end
 
   val part2 = (Option.map part2') o Tickets.tickets o Readers.all o Readers.file
