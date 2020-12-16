@@ -31,4 +31,11 @@ structure List' = struct
 
   fun with_indices xs =
     ListPair.zip (List.tabulate (List.length xs, Lambda.id), xs)
+
+  fun transpose xss =
+    case xss
+      of [] => []
+       | []::_ => [] (* assumes they are all empty at this point *)
+       | _ => (List.map List.hd xss) :: (transpose (List.map List.tl xss))
+
 end

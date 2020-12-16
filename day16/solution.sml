@@ -60,9 +60,9 @@ structure Solution = struct
 
   fun rule_valid (_, range) value =
     range_valid range value
+  fun valid_for_any rules v = List.exists (fn r => rule_valid r v) rules
 
   fun rule_invalid r = not o (rule_valid r)
-
   fun invalid_for_all rules v = List.all (fn r => rule_invalid r v) rules
 
   fun part1' (rules, _, nearby) =
@@ -76,5 +76,64 @@ structure Solution = struct
     end
 
   val part1 = (Option.map part1') o Tickets.tickets o Readers.all o Readers.file
+
+  structure RuleSet = RedBlackSetFn(struct
+    type ord_key = rule
+    fun compare ((f1, _), (f2, _)) = String.compare (f1, f2)
+  end)
+
+  fun valid_for_all rules vs =
+    RuleSet.fromList
+      (List.filter
+      (fn r => List.all (rule_valid r) vs)
+      rules)
+
+  fun solve_set_eqns cands =
+    if List.all ((Lambda.is 1) o RuleSet.numItems) cands
+    then SOME (List.concat (List.map RuleSet.toList cands))
+    else
+      let
+        val fixed =
+          List.foldl RuleSet.union RuleSet.empty
+          (List.filter ((Lambda.is 1) o RuleSet.numItems) cands)
+      in
+        if RuleSet.isEmpty fixed
+        then NONE
+        else
+          let
+            val sans_fixed =
+              List.map
+              (fn c => if RuleSet.numItems c = 1
+                       then c (* only subtract from the non-singletons *)
+                       else RuleSet.difference (c, fixed))
+              cands
+          in
+            if List.exists RuleSet.isEmpty sans_fixed
+            then NONE
+            else solve_set_eqns sans_fixed
+          end
+      end
+
+  fun part2' (rules, mine, nearby) =
+    let
+      val valid =
+        mine::(List.filter (List.all (valid_for_any rules)) nearby)
+      val by_field = List'.transpose valid
+      val cands = List.map (valid_for_all rules) by_field
+      val fields = Option.map List'.with_indices (solve_set_eqns cands)
+      val starts_with_departure =
+        Option.map
+        (List.filter (String.isPrefix "departure" o #1 o #2))
+        fields
+      val departure_indices = Option.map (List.map #1) starts_with_departure
+      val my_departures =
+        Option.map
+        (List.map (fn i => List.nth (mine, i)))
+        departure_indices
+    in
+      Option.map List'.prod my_departures
+    end
+
+  val part2 = (Option.map part2') o Tickets.tickets o Readers.all o Readers.file
 
 end
