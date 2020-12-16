@@ -1,4 +1,6 @@
 structure Range = struct
+  type range = {min: int, max: int}
+
   fun fromString c str =
     let val ints = map Int.fromString (Readers.on_char c str)
     in case ints
