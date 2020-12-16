@@ -88,15 +88,26 @@ structure Solution = struct
       (fn r => List.all (rule_valid r) vs)
       rules)
 
+  (* cands is a list of sets, so acts like the mapping
+   * index -> {possible rules}
+   * we want to find the mapping
+   * rule -> index
+   * if it exists such that every rule has a unique index and every index has a
+   * unique index
+   * the result is a list of rules *)
   fun solve_set_eqns cands =
+    (* all singletons, solved *)
     if List.all ((Lambda.is 1) o RuleSet.numItems) cands
     then SOME (List.concat (List.map RuleSet.toList cands))
     else
       let
+        (* set of already solved equations *)
         val fixed =
           List.foldl RuleSet.union RuleSet.empty
           (List.filter ((Lambda.is 1) o RuleSet.numItems) cands)
       in
+        (* if none are already solved, there is no unique solution
+         * there may be multiple solutions, but we want the unique one *)
         if RuleSet.isEmpty fixed
         then NONE
         else
@@ -108,6 +119,7 @@ structure Solution = struct
                        else RuleSet.difference (c, fixed))
               cands
           in
+            (* if there are empty sets, there is no solution *)
             if List.exists RuleSet.isEmpty sans_fixed
             then NONE
             else solve_set_eqns sans_fixed
