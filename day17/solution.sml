@@ -47,20 +47,24 @@ structure Solution = struct
     else Inactive
 
   fun next n cubes =
-    PointNMap.foldli (fn (p, c, cubes') =>
-      List.foldl
-      (fn (p', cubes'') =>
-        PointNMap.insert ( cubes''
-                         , p'
-                         , case PointNMap.find (cubes, p')
-                             of SOME Active => next_active n cubes p'
-                              | SOME Inactive => next_inactive n cubes p'
+    let
+      val to_check =
+        PointNSet.fromList
+        (List.concat
+        (List.map (neighbors n)
+        (PointNMap.listKeys cubes)))
+    in
+      PointNSet.foldl (fn (p, cubes') =>
+        PointNMap.insert ( cubes'
+                         , p
+                         , case PointNMap.find (cubes, p)
+                             of SOME Active => next_active n cubes p
+                              | SOME Inactive => next_inactive n cubes p
                               (* inactive, but wasn't already in the map *)
-                              | NONE => next_inactive n cubes p'))
-      cubes'
-      (p::(neighbors n p)))
-    PointNMap.empty
-    cubes
+                              | NONE => next_inactive n cubes p))
+      PointNMap.empty
+      to_check
+    end
 
   fun run dim n cubes =
     if n = 0
