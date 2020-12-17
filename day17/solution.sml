@@ -78,4 +78,7 @@ structure Solution = struct
   val part1' = partn' 3
   val part1 = partn 3
 
+  val part2' = partn' 4
+  val part2 = partn 4
+
 end
