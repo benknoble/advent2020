@@ -102,40 +102,6 @@ structure Point = struct
 
 end
 
-structure Point3 = struct
-  type point3 = {x: int, y: int, z: int}
-  val origin: point3 = {x=0, y=0, z=0}
-
-  fun new x y z : point3 = {x=x, y=y, z=z}
-  fun new' (x, y, z) = new x y z
-
-  fun map f {x, y, z} = f (x, y, z)
-
-  fun map2 fx fy fz {x, y, z} {x=x', y=y', z=z'} =
-    (fx (x, x'), fy (y, y'), fz (z, z'))
-
-  fun map2p fx fy fz p1 p2 = new' (map2 fx fy fz p1 p2)
-
-  val move = map2p op+ op+ op+
-
-  fun realDist p1 p2 =
-    let
-      val norm = (fn d => Math.pow (d, 2.0)) o real o abs o op-
-      val (dx2, dy2, dz2) = map2 norm norm norm p1 p2
-    in
-      Math.sqrt (dx2 + dy2 + dz2)
-    end
-
-  val distToOrigin = realDist origin
-
-  fun compare ({x, y, z}, {x=x', y=y', z=z'}) =
-    case Int.compare (x, x')
-      of EQUAL => (case Int.compare (y, y')
-                     of EQUAL => Int.compare (z, z')
-                      | ys => ys)
-       | xs => xs
-end
-
 structure PointN = struct
   type pointN = int list
 
@@ -176,13 +142,6 @@ structure PointMap = RedBlackMapFn(struct
   val compare = Point.compare
 end)
 structure PointMap = WithMapUtilsFn(structure M = PointMap)
-
-structure Point3Map = RedBlackMapFn(struct
-  type ord_key = Point3.point3
-  val compare = Point3.compare
-end)
-structure Point3Map = WithMapUtilsFn(structure M = Point3Map)
-structure Point3Set = Point3Map.KeySet
 
 structure PointNMap = RedBlackMapFn(struct
   type ord_key = PointN.pointN
