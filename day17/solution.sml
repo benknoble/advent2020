@@ -67,7 +67,11 @@ structure Solution = struct
     then cubes
     else run dim (n-1) (next dim cubes)
 
-  val part1' = List'.count_matching (Lambda.is Active) o PointNMap.listItems o run 3 6
-  val part1 = part1' o (read_map 3)
+  fun partn' n =
+    List'.count_matching (Lambda.is Active) o PointNMap.listItems o run n 6
+  fun partn n = (partn' n) o (read_map n)
+
+  val part1' = partn' 3
+  val part1 = partn 3
 
 end
