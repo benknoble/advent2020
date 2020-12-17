@@ -136,6 +136,36 @@ structure Point3 = struct
        | xs => xs
 end
 
+structure PointN = struct
+  type pointN = int list
+
+  val dim = List.length
+
+  fun origin n = List'.rep n 0
+
+  fun new n pis =
+    let val len = List.length pis
+    in
+      if len > n
+      then raise ListPair.UnequalLengths
+      else pis @ (List'.rep (n - len) 0)
+    end
+
+  fun map f p = Option.map (fn (h, t) => List.foldl f h t) (List.getItem p)
+
+  fun map' fs p = ListPair.mapEq (fn (f, pi) => f pi) (fs, p)
+
+  fun map2 fs p1 p2 =
+    ListPair.mapEq (fn (f, (p1i, p2i)) => f (p1i, p2i))
+    (fs, ListPair.zipEq (p1, p2))
+
+  fun map2' f p1 p2 = map2 (List'.rep (List.length p1) f) p1 p2
+
+  val move = map2' op+
+
+  val compare = List.collate Int.compare
+end
+
 structure PointSet = RedBlackSetFn(struct
   type ord_key = Point.point
   val compare = Point.compare
@@ -153,3 +183,10 @@ structure Point3Map = RedBlackMapFn(struct
 end)
 structure Point3Map = WithMapUtilsFn(structure M = Point3Map)
 structure Point3Set = Point3Map.KeySet
+
+structure PointNMap = RedBlackMapFn(struct
+  type ord_key = PointN.pointN
+  val compare = PointN.compare
+end)
+structure PointNMap = WithMapUtilsFn(structure M = PointNMap)
+structure PointNSet = PointNMap.KeySet
