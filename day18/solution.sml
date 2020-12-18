@@ -19,6 +19,14 @@ structure Solution = struct
 
     fun nump getc = (decp $> Num) getc
 
+    (* based loosely on the example at
+     * https://www.smlnj.org/doc/smlnj-lib/Util/str-ParserComb.html
+     *
+     * the difference is we have more than one possible sub-expression in the
+     * left-to-right chain produced by ?+ (expr') whereas the example is all
+     * addition
+     * so we pair them with the expr-building function (addp, multp use Add and
+     * Mult) and then apply that in exprp *)
     fun basep getc = (nump || parenp) getc
     and parenp getc =
       ((skip_ws (PC.char #"(") +> exprp +> PC.char #")")
@@ -50,6 +58,10 @@ structure Solution = struct
     infixr 3 >>
     infixr 3 ||
 
+    (* straightforward stratified LL(1) expression grammar with + and ⋅ flipped:
+     * E := T ('⋅' E)?
+     * T := F ('+' T)?
+     * F := number | '(' E ')' *)
     fun exprp getc =
       ((termp +> ?? multp)
       $> (fn (left, right) => case right
