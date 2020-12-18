@@ -10,7 +10,7 @@ structure Solution = struct
        | Add (e1, e2) => eval_expr e1 + eval_expr e2
        | Mult (e1, e2) => eval_expr e1 * eval_expr e2
 
-  structure Math = struct
+  structure BasicMath = struct
     open Readers.ParserOps
     infixr 3 $>
     infixr 3 +>
@@ -43,7 +43,45 @@ structure Solution = struct
     val exprs = prun exprsp
   end
 
-  val part1' = List'.sum o (List.map eval_expr)
-  val part1 = Option.map part1' o Math.exprs o Readers.all o Readers.file
+  structure AdvancedMath = struct
+    open Readers.ParserOps
+    infixr 3 $>
+    infixr 3 +>
+    infixr 3 >>
+    infixr 3 ||
+
+    fun exprp getc =
+      ((termp +> ?? multp)
+      $> (fn (left, right) => case right
+                                of NONE => left
+                                 | SOME right' => Mult (left, right')))
+      getc
+    and termp getc =
+      ((basep +> ?? addp)
+      $> (fn (left, right) => case right
+                                of NONE => left
+                                 | SOME right' => Add (left, right')))
+      getc
+    and multp getc =
+      ((skip_ws (PC.char #"*") +> exprp) $> #2)
+      getc
+    and addp getc =
+      ((skip_ws (PC.char #"+") +> termp) $> #2)
+      getc
+    and basep getc = (BasicMath.nump || parenp) getc
+    and parenp getc =
+      ((skip_ws (PC.char #"(") +> exprp +> PC.char #")")
+      $> (#1 o #2))
+      getc
+
+    fun exprsp getc = (?+ (skip_ws exprp)) getc
+
+    val exprs = prun exprsp
+  end
+
+  val sum_expr = List'.sum o (List.map eval_expr)
+  fun part f = Option.map sum_expr o f o Readers.all o Readers.file
+  val part1 = part BasicMath.exprs
+  val part2 = part AdvancedMath.exprs
 
 end
