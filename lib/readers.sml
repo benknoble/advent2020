@@ -55,18 +55,27 @@ structure Readers = struct
     val ?? = PC.option
     val !! = PC.join
 
+    infixr 3 $>
+    infixr 3 +>
+    infixr 3 >>
+    infixr 3 ||
+
     fun skip_ws getc = PC.skipBefore Char.isSpace getc
 
     val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option = StringCvt.scanString
 
-    fun anything getc =
-      (?+ (PC.eatChar (Lambda.k true)))
-      getc
+    fun anyc getc = (PC.eatChar (Lambda.k true)) getc
+
+    fun anything getc = (?+ anyc) getc
 
     fun stop rest result =
       if List.null rest
       then PC.result result
       else PC.failure
+
+    fun finish p getc =
+      ((p +> anything) >> (fn (result, rest) => stop rest result))
+      getc
 
     fun digitp getc = PC.eatChar Char.isDigit getc
     fun hexdigitp getc = PC.eatChar Char.isHexDigit getc
