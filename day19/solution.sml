@@ -44,29 +44,36 @@ structure Solution = struct
       $> List.foldl IntRedBlackMap.insert' IntRedBlackMap.empty)
       getc
 
-    fun run_rulep n rs getc =
+    fun run_rulep n rs extra acc getc =
       let
         fun run_seq rs' =
-          List.foldl (fn (curr, acc) => (acc >> Lambda.k (run_rulep curr rs)))
-          (PC.result ())
+          List.foldl
+          (fn (curr, acc') =>
+            ((acc' +> (run_rulep curr rs extra acc))
+            $> (IntRedBlackMap.unionWith op+)))
+          (PC.result acc)
           rs'
       in
-        case IntRedBlackMap.lookup (rs, n)
-          of Char c =>
-               (PC.char c $> Lambda.k ())
-               getc
-           | Alt (r1s, r2s) =>
-               ((case (List.length r1s, List.length r2s)
-                  of (0, 0) => anything >> Lambda.k PC.failure
-                   | (0, _) => run_seq r2s
-                   | (_, 0) => run_seq r1s
-                   | (_, _) => (run_seq r1s) || (run_seq r2s))
-                $> Lambda.k ())
-               getc
+        case extra (acc, n)
+          of SOME p => p getc
+           | NONE =>
+               (case IntRedBlackMap.lookup (rs, n)
+                  of Char c =>
+                       (PC.char c
+                       $> Lambda.k (IntRedBlackMap.insertWith op+ (acc, n, 1)))
+                       getc
+                   | Alt (r1s, r2s) =>
+                       ((case (List.length r1s, List.length r2s)
+                           of (0, 0) => anything >> Lambda.k PC.failure
+                            | (0, _) => run_seq r2s
+                            | (_, 0) => run_seq r1s
+                            | (_, _) => (run_seq r1s) || (run_seq r2s))
+                            $> (fn acc' => IntRedBlackMap.insertWith op+ (acc', n, 1)))
+                            getc)
       end
 
-    fun run_rule n rs = prun (finish (run_rulep n rs))
-    fun accepts n rs = Option.isSome o (run_rule n rs)
+    fun run_rule n rs extra acc = prun (finish (run_rulep n rs extra acc))
+    fun accepts n rs extra acc = Option.isSome o (run_rule n rs extra acc)
 
     fun messagep getc =
       (PC.token (not o Char.isSpace))
@@ -82,6 +89,7 @@ structure Solution = struct
       getc
 
     val rules_messages = prun rules_messagesp
+
   end
 
   (* debugging *)
@@ -110,16 +118,19 @@ structure Solution = struct
 
   fun find_differences (rs, ms) =
     let
-      val by_parser = List.map (Data.accepts 0 rs) ms
+      val by_parser = List.map (Data.accepts 0 rs (Lambda.k NONE) IntRedBlackMap.empty) ms
       val by_re = List.map (re_accepts 0 rs) ms
     in
-      List.filter (fn (i, p, r) => p <> r)
+      List.filter (fn (_, p, r) => p <> r)
       (ListPair.mapEq (fn ((i, p), r) => (i, p, r))
       (List'.with_indices by_parser, by_re))
     end
+
+  val printMap =
+    IntRedBlackMap.appi (fn (k, v) => print ((Int.toString k) ^ "," ^ (Int.toString v) ^ "\n"))
   (* end debugging *)
 
-  fun part1' (rs, ms) = List'.count_matching (Data.accepts 0 rs) ms
+  fun part1' (rs, ms) = List'.count_matching (Data.accepts 0 rs (Lambda.k NONE) IntRedBlackMap.empty) ms
   val part1 = Option.map part1' o Data.rules_messages o Readers.all o Readers.file
 
 end
