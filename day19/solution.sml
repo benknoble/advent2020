@@ -133,4 +133,49 @@ structure Solution = struct
   fun part1' (rs, ms) = List'.count_matching (Data.accepts 0 rs (Lambda.k NONE) IntRedBlackMap.empty) ms
   val part1 = Option.map part1' o Data.rules_messages o Readers.all o Readers.file
 
+  fun part2' (rs, ms) =
+    let
+      (* val rs' = IntRedBlackMap.insert (rs, 8, Alt ([42], [42, 8])) *)
+      (* val rs'' = IntRedBlackMap.insert (rs', 11, Alt ([42, 31], [42, 11, 31])) *)
+      (* 8: 42+
+       * 11: 42^n 31^n ; n ≥ 1
+       * but we can't find a parser-combinator combination that correctly parses
+       * 42+ 42^n 31^n
+       *
+       * instead, lets parse 42+ 31+ and then check the counts afterwards *)
+      local
+        open Readers.ParserOps
+        infixr 3 $>
+        infixr 3 +>
+        infixr 3 >>
+        infixr 3 ||
+      in
+        fun extra (acc, n) =
+          case n
+            of 0 => SOME
+                (fn getc =>
+                  (((++ (Data.run_rulep 42 rs extra acc))
+                    +> (++ (Data.run_rulep 31 rs extra acc)))
+                  $> (fn (lefts, rights) =>
+                        IntRedBlackMap.unionWith op+
+                        ( List.foldl (IntRedBlackMap.unionWith op+) IntRedBlackMap.empty lefts
+                        , List.foldl (IntRedBlackMap.unionWith op+) IntRedBlackMap.empty rights)))
+                  getc)
+            | _ => NONE
+      end
+      fun accepts m =
+        case Data.run_rule 0 rs extra IntRedBlackMap.empty m
+          of NONE => false
+           | SOME acc =>
+               let
+                 val num42s = Option.getOpt (IntRedBlackMap.find (acc, 42), 0)
+                 val num31s = Option.getOpt (IntRedBlackMap.find (acc, 31), 0)
+               in
+                 num42s > num31s
+               end
+    in
+     List'.count_matching accepts ms
+    end
+  val part2 = Option.map part2' o Data.rules_messages o Readers.all o Readers.file
+
 end
