@@ -32,6 +32,23 @@ structure Solution = struct
     val game = prun gamep
   end
 
+  fun p1wins (p1_card, p1) (p2_card, p2) =
+    Game (Fifo.enqueue (Fifo.enqueue (p1, p1_card), p2_card),  p2)
+
+  fun p2wins (p1_card, p1) (p2_card, p2) =
+    Game (p1, Fifo.enqueue (Fifo.enqueue (p2, p2_card), p1_card))
+
+  fun round_winner (p1_card, _) (p2_card, _) =
+    case Int.compare (p1_card, p2_card)
+      of LESS => Player2
+       | GREATER => Player1
+       | EQUAL => raise Fail "no rules for ties"
+
+  fun round_next p1 p2 =
+    case round_winner p1 p2
+      of Player1 => p1wins p1 p2
+       | Player2 => p2wins p1 p2
+
   fun step game =
     case game
       of Game (p1, p2) =>
@@ -39,15 +56,7 @@ structure Solution = struct
              of (SOME _, NONE) => Over (p1, Player1)
               | (NONE, SOME _) => Over (p2, Player2)
               | (NONE, NONE) => raise Fail "no one has any cards"
-              | (SOME (p1_card, p1'), SOME (p2_card, p2')) =>
-                  (case Int.compare (p1_card, p2_card)
-                    of LESS =>
-                         Game ( p1'
-                              , Fifo.enqueue (Fifo.enqueue (p2', p2_card), p1_card))
-                     | GREATER =>
-                         Game ( Fifo.enqueue (Fifo.enqueue (p1', p1_card), p2_card)
-                              , p2')
-                     | EQUAL => raise Fail "no rules for ties"))
+              | (SOME p1', SOME p2') => round_next p1' p2')
        | Over _ => game
 
   fun play game =
