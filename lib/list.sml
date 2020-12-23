@@ -38,4 +38,17 @@ structure List' = struct
        | []::_ => [] (* assumes they are all empty at this point *)
        | _ => (List.map List.hd xss) :: (transpose (List.map List.tl xss))
 
+  fun takeWhile f xs =
+    let
+      fun loop (left, right) =
+        case right
+          of [] => (List.rev left, right)
+           | h::t => if f h then loop (h::left, t) else (List.rev left, right)
+    in
+      loop ([], xs)
+    end
+
+  fun rotateLeft xs =
+    if List.null xs then xs else (tl xs @ [hd xs])
+
 end
