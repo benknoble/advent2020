@@ -1,12 +1,9 @@
 structure Solution = struct
 
-  type deck = int Fifo.fifo
+  type deck = int list
   datatype winner = Player1 | Player2
   datatype game = Game of deck * deck
                 | Over of deck * winner
-
-  fun mk_deck xs =
-    List.foldl (fn (x, acc) => Fifo.enqueue (acc, x)) Fifo.empty xs
 
   structure Decks = struct
     open Readers.ParserOps
@@ -16,8 +13,7 @@ structure Solution = struct
     infixr 3 ||
 
     fun deckp getc =
-      ((++ ((decp +> ?? (PC.char #"\n")) $> #1))
-      $> mk_deck)
+      (++ ((decp +> ?? (PC.char #"\n")) $> #1))
       getc
 
     fun gamep getc =
@@ -33,10 +29,10 @@ structure Solution = struct
   end
 
   fun p1wins (p1_card, p1) (p2_card, p2) =
-    Game (Fifo.enqueue (Fifo.enqueue (p1, p1_card), p2_card),  p2)
+    Game (p1 @ [p1_card, p2_card],  p2)
 
   fun p2wins (p1_card, p1) (p2_card, p2) =
-    Game (p1, Fifo.enqueue (Fifo.enqueue (p2, p2_card), p1_card))
+    Game (p1, p2 @ [p2_card, p1_card])
 
   fun round_winner (p1_card, _) (p2_card, _) =
     case Int.compare (p1_card, p2_card)
@@ -52,7 +48,7 @@ structure Solution = struct
   fun step game =
     case game
       of Game (p1, p2) =>
-           (case (Fifo.next p1, Fifo.next p2)
+           (case (List.getItem p1, List.getItem p2)
              of (SOME _, NONE) => Over (p1, Player1)
               | (NONE, SOME _) => Over (p2, Player2)
               | (NONE, NONE) => raise Fail "no one has any cards"
@@ -70,16 +66,15 @@ structure Solution = struct
            (List'.sum
            o List.map (fn (i,c) => (i + 1) * c)
            o List'.with_indices
-           o List.rev
-           o Fifo.contents)
+           o List.rev)
            wdeck
        | Game _ => raise Fail "game not over"
 
   val part1' = score o play
   val part1 = Option.map part1' o Decks.game o Readers.all o Readers.file
 
-  fun fifo_compare (f1, f2) =
-    List.collate Int.compare (Fifo.contents f1, Fifo.contents f2)
+  fun deck_compare (d1, d2) =
+    List.collate Int.compare (d1, d2)
 
   structure GameMap = RedBlackMapFn(struct
     type ord_key = game
@@ -88,7 +83,7 @@ structure Solution = struct
         of (Game _, Over _) => GREATER
          | (Over _, Game _) => LESS
          | (Over (d1, w1), Over (d2, w2)) =>
-             (case fifo_compare (d1, d2)
+             (case deck_compare (d1, d2)
                 of EQUAL =>
                      (case (w1, w2)
                         of (Player1, Player1) => EQUAL
@@ -97,19 +92,19 @@ structure Solution = struct
                          | (Player2, Player1) => GREATER)
                  | x => x)
          | (Game (p11, p12), Game (p21, p22)) =>
-             (case fifo_compare (p11, p21)
-                of EQUAL => fifo_compare (p12, p22)
+             (case deck_compare (p11, p21)
+                of EQUAL => deck_compare (p12, p22)
                  | x => x)
   end)
   structure GameMap = WithMapUtilsFn(structure M = GameMap)
   structure GameSet = GameMap.KeySet
 
-  fun deck_take_n (n, deck) = mk_deck (List.take (Fifo.contents deck, n))
+  fun deck_take_n (n, deck) = List.take (deck, n)
 
   fun can_recurse (p1_card, p1) (p2_card, p2) =
-    Fifo.length p1 >= p1_card
+    List.length p1 >= p1_card
     andalso
-    Fifo.length p2 >= p2_card
+    List.length p2 >= p2_card
 
   fun stepR prev game =
     case game
@@ -117,7 +112,7 @@ structure Solution = struct
            if GameSet.member (prev, game)
            then Over (p1, Player1)
            else
-             (case (Fifo.next p1, Fifo.next p2)
+             (case (List.getItem p1, List.getItem p2)
                    of (SOME _, NONE) => Over (p1, Player1)
                     | (NONE, SOME _) => Over (p2, Player2)
                     | (NONE, NONE) => raise Fail "no one has any cards"
