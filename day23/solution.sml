@@ -112,4 +112,14 @@ structure Solution = struct
 
   val part1 = Option.map part1' o Cups.cups o Readers.all o Readers.file
 
+  fun part2' (n, left, current, right) =
+    let
+      val right' = Range.toList {min=n+1, max=1000000}
+      val cups' = (1000000, left, current, right @ right')
+      val cups'' = moveN 10000000 cups'
+      val (_::first::second::_) = move_one_to_front cups''
+    in
+      first * second
+    end
+
 end
