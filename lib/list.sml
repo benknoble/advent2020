@@ -51,4 +51,10 @@ structure List' = struct
   fun rotateLeft xs =
     if List.null xs then xs else (tl xs @ [hd xs])
 
+  fun index_of xs x =
+    (Option.map #1
+    o List.find (Lambda.is x o #2)
+    o with_indices)
+    xs
+
 end

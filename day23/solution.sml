@@ -1,10 +1,55 @@
 structure Solution = struct
 
-  (* length, left, current, right
-   * such that List.length (length @ [current] @ right) = length *)
-  type cups = int * int list * int * int list
+  (* cup -> next cup
+   * current cup
+   * Vectors are too slow, so we'll use arrays *)
+  type cups = int Array.array * int
 
-  fun cup_init xs: cups = (List.length xs, [], hd xs, tl xs)
+  fun %= (a, (i, x)) = Array.update (a, i, x)
+  infix 3 %=
+
+  fun % (a, i) = Array.sub (a, i)
+  infix 3 %
+
+  fun mk_circular xs =
+    let
+      val current = hd xs
+      val length = List.length xs
+    in
+      Array.tabulate (length + 1, fn i =>
+        if i = 0
+        then current
+        else (* 0 <= i <= length *)
+          let val ii = Option.valOf (List'.index_of xs i)
+          in List.nth (xs, (ii + 1) mod length)
+          end)
+    end
+
+  fun mk_extended n xs =
+    let
+      val current = hd xs
+      val length = List.length xs
+    in
+      Array.tabulate (n+1, fn i =>
+        if i = 0 orelse i = n
+        then current
+        else if i <= length
+        then
+          let val ii = Option.valOf (List'.index_of xs i)
+          in
+            if ii < length - 1
+            then List.nth (xs, ii + 1)
+            else length + 1
+          end
+        else i + 1)
+    end
+
+  fun cup_init n xs: cups =
+    let val current = hd xs
+    in case n
+         of NONE => (mk_circular xs, current)
+          | SOME n' => (mk_extended n' xs, current)
+    end
 
   structure Cups = struct
     open Readers.ParserOps
@@ -13,113 +58,101 @@ structure Solution = struct
     infixr 3 >>
     infixr 3 ||
 
-    fun cupsp getc =
+    fun cupsp n getc =
       ((++ (digitp $> (Option.valOf o Int.fromString o String.str)))
-      $> cup_init)
+      $> (cup_init n))
       getc
 
-    val cups = prun cupsp
+    fun cups n = prun (cupsp n)
   end
 
-  fun take3 (left, current, right) =
-    let val right_length = List.length right
+  fun take3 (cups, current) =
+    let
+      val one = cups % current
+      val two = cups % one
+      val three = cups % two
     in
-      if right_length >= 3
-      then (List.take (right, 3), left, List.drop (right, 3))
-      else
-        let
-          val from_left = List.take (left, 3 - right_length)
-          val left' = List.drop (left, 3 - right_length)
-        in
-          (right @ from_left, left', [])
-        end
+      (one, two, three)
     end
 
-  fun dest (n, current, skip) =
+  fun dest (one, two, three) n current =
     let
-      fun target offset =
-        let val target' = current - offset
-        in if target' = 0 then n else target' mod n
-        end
-      fun contains_candidate c = List.exists (Lambda.is c) skip
+      fun prev candidate =
+        if candidate = 1
+        then n
+        else candidate - 1
+      fun loop candidate =
+        if one = candidate orelse two = candidate orelse three = candidate
+        then loop (prev candidate)
+        else candidate
     in
-      (Option.valOf
-      o List.find (not o contains_candidate)
-      o List.map target)
-      [1, 2, 3, 4]
+      loop (prev current)
     end
 
-  fun place dest picked_up (left, right) =
-    if List.exists (Lambda.is dest) left
-    then
-      let
-        val (left_before, _::left_after) = List'.takeWhile (not o (Lambda.is dest)) left
-      in
-        (left_before @ (dest::picked_up) @ left_after, right)
-      end
-    else (* assume right *)
-      let
-        val (right_before, _::right_after) = List'.takeWhile (not o (Lambda.is dest)) right
-      in
-        (left, right_before @ (dest::picked_up) @ right_after)
-      end
-
-  fun rebalance (n, left, current) =
+  fun place dest (one, _, three) (cups, current) =
     let
-      val right = List.take (left, n div 2)
-      val left' = List.drop (left, n div 2)
+      val four = cups % three
+      val next = cups % dest
     in
-      (n, left', current, right)
+      cups %= (current, four);
+      cups %= (three, next);
+      cups %= (dest, one)
     end
 
-  fun move (n, left, current, right) =
+  fun move (cups, current) =
     let
-      val (picked_up, left', right') = take3 (left, current, right)
-      val dest = dest (n, current, picked_up)
-      val (left'', right'') = place dest picked_up (left', right')
-      val left''' = left'' @ [current]
+      val taken = take3 (cups, current)
+      val dest = dest taken (Array.length cups - 1) current
     in
-      case right''
-        of [] => rebalance (n, tl left''', hd left'')
-         | [h] => rebalance (n, left''', h)
-         | h::t => (n, left''', h, t)
+      place dest taken (cups, current);
+      (cups, cups % current)
     end
 
   fun moveN n cups =
     if n = 0 then cups
-    else moveN (n-1) (move cups)
+    else (print ((Int.toString n) ^ "\n"); moveN (n-1) (move cups))
 
-  fun toList (_, left, current, right) = left @ [current] @ right
+  fun cupsToList (cups, current) =
+    let
+      fun loop (prev, acc) =
+        if prev = current andalso not (List.null acc)
+        then List.rev acc
+        else loop ((cups % prev), prev::acc)
+    in
+      loop (current, [])
+    end
 
   fun move_one_to_front cups =
     let
-      val cups' = toList cups
       fun loop cups =
         if hd cups = 1
         then cups
         else loop (List'.rotateLeft cups)
     in
-      loop cups'
+      loop cups
     end
 
   fun part1' cups =
     let
       val cups' = moveN 100 cups
-      val ans = tl (move_one_to_front cups')
+      val ans = tl (move_one_to_front (cupsToList cups'))
     in
-      String.concat (map Int.toString ans)
+      String.concat (List.map Int.toString ans)
     end
 
-  val part1 = Option.map part1' o Cups.cups o Readers.all o Readers.file
+  val part1 = Option.map part1' o Cups.cups NONE o Readers.all o Readers.file
 
-  fun part2' (n, left, current, right) =
+  fun part2' cups =
     let
-      val right' = Range.toList {min=n+1, max=1000000}
-      val cups' = (1000000, left, current, right @ right')
-      val cups'' = moveN 10000000 cups'
-      val (_::first::second::_) = move_one_to_front cups''
+      val n = 1000000
+      val cups' = cup_init (SOME n) (cupsToList cups)
+      val (cups'', _) = moveN 10000000 cups'
+      val first = cups'' % 1
+      val second = cups'' % first
     in
       first * second
     end
+
+  val part2 = Option.map part2' o Cups.cups NONE o Readers.all o Readers.file
 
 end
