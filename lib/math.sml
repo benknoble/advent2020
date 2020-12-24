@@ -1,4 +1,10 @@
-structure Math' = struct
+signature MATH' = sig
+  val extended_euclidean: int * int -> int * int * int * int * int
+  val modular_inverse: int * int -> int
+  val crt: (int * int) list -> int
+end
+
+structure Math': MATH' = struct
 
   fun extended_euclidean (a, b) =
     let
