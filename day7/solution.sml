@@ -1,4 +1,42 @@
-structure Solution = struct
+signature DAY7 = sig
+  type bag
+  type contained_in
+  type contained_graph
+  type contains
+  type contains_graph
+
+  val bag: string -> bag
+  val contained: int * string -> contained_in
+  val contained_graph: (bag * contained_in list) list -> contained_graph
+  val contains_graph: (bag * contains list) list -> contains_graph
+
+  val contained_to_contains: contained_graph -> contains_graph
+
+  val neighbors: contained_graph -> bag -> contained_in list
+  structure ContainedDfs: DFS where type graph = contained_graph
+
+  structure Rules: sig
+    val colorp: (string, 'strm) ParserComb.parser
+    val bagp: (bag, 'strm) ParserComb.parser
+    val nbagp: (contains list, 'strm) ParserComb.parser
+    val rulep: ((bag * contained_in list) list, 'strm) ParserComb.parser
+    val rulesp': (contained_graph, 'strm) ParserComb.parser
+    val rulesp: string -> contained_graph option
+  end
+
+  val test_read: string -> (string * (int * string) list) list option
+
+  val part1': contained_graph -> int
+  val part1: string -> int
+
+  val requires': contains_graph -> int * bag -> int
+  val requires: contains_graph -> int * bag -> int
+
+  val part2': contains_graph -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY7 = struct
   type bag = Atom.atom
   type contained_in = int * bag
   (* b1 -> [(n, b2), …] means n b1s are contained in b2, &c. *)
@@ -9,12 +47,12 @@ structure Solution = struct
 
   val bag = Atom.atom
   fun contained (n, b) = (n, bag b)
-  fun contained_graph (kvs: (bag * contains list) list): contained_graph =
+  fun contained_graph kvs =
     List.foldl
     (fn ((k, v), m) => AtomMap.insertWith List.@ (m, k, v))
     AtomMap.empty
     kvs
-  val contains_graph: (bag * contains list) list -> contains_graph =
+  val contains_graph =
     (* by a quirk, they have the same representation, so this is fine *)
     contained_graph
 
@@ -83,7 +121,7 @@ structure Solution = struct
 
 
   (* g really needs to be a contains_graph, or this won't make sense *)
-  fun requires' (g: contains_graph) (n, bag) =
+  fun requires' g (n, bag) =
     (n + n * (List'.sum (List.map (requires' g) (neighbors g bag))))
   (* requires' overcounts: it includes the count of each bag that it adds,
    * including the start, while we often want to know how many bags are required
