@@ -1,11 +1,41 @@
-structure Solution = struct
+signature DAY5 = sig
+  datatype row = F | B
+  datatype column = L | R
+  type seat
+  type seat_nr
+
+  val seat_nr: seat -> seat_nr
+  val seat_id: seat_nr -> int
+
+  structure Pass: sig
+    val rowp: (row, 'strm) ParserComb.parser
+    val columnp: (column, 'strm) ParserComb.parser
+    val rowsp: (row list, 'strm) ParserComb.parser
+    val columnsp: (column list, 'strm) ParserComb.parser
+
+    val pass': (seat, 'strm) ParserComb.parser
+    val pass: string -> seat option
+    val passes: string -> seat option list
+  end
+
+  val part1': seat list -> int
+  val part1: string -> int
+
+  val ids: seat list -> IntRedBlackSet.set
+  val candidates: seat list -> IntRedBlackSet.set * int list
+
+  val part2': seat list -> int list
+  val part2: string -> int list
+end
+
+structure Solution: DAY5 = struct
 
   datatype row = F | B
   datatype column = L | R
   type seat = row list * column list
   type seat_nr = {row: int, column: int}
 
-  fun seat_nr ((rows, columns): seat): seat_nr =
+  fun seat_nr (rows, columns) =
     let
       val rows = List.map (fn F => Range.Lower | B => Range.Upper) rows
       val columns = List.map (fn L => Range.Lower | R => Range.Upper) columns
@@ -13,7 +43,7 @@ structure Solution = struct
       {row=Range.bsp 0 rows, column=Range.bsp 0 columns}
     end
 
-  fun seat_id ({row, column}: seat_nr) = row * 8 + column
+  fun seat_id {row, column} = row * 8 + column
 
   structure Pass = struct
     open Readers.ParserOps
