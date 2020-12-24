@@ -1,4 +1,20 @@
-structure Solution = struct
+signature DAY2 = sig
+  type rule = {range: Range.range, letter: char, password: string}
+  val read_password_rules': string -> rule list
+  val read_password_rules: string -> rule list
+
+  val valid1: rule -> bool
+  val part1': rule list -> int
+  val part1: string -> int
+
+  val valid2: rule -> bool
+  val part2': rule list -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY2 = struct
+
+  type rule = {range: Range.range, letter: char, password: string}
 
   val read_password_rules' =
     (map (fn [range, letter, pwd] =>
