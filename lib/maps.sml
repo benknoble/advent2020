@@ -1,4 +1,11 @@
-functor WithMapUtilsFn(structure M: ORD_MAP) = struct
+signature ORD_MAP_UTILS = sig
+  include ORD_MAP
+  structure KeySet: ORD_SET sharing type Key.ord_key = Key.ord_key
+  val keys: 'a map -> KeySet.set
+  val fromList: (Key.ord_key * 'a) list -> 'a map
+end
+
+functor WithMapUtilsFn(structure M: ORD_MAP): ORD_MAP_UTILS = struct
   open M
 
   structure KeySet = RedBlackSetFn(Key)
