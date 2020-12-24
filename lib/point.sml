@@ -1,16 +1,39 @@
-structure Point = struct
-  type point = {x : int, y : int}
-  val origin : point = {x=0, y=0}
+signature POINT = sig
+  type point
+  val origin: point
+  val new: int -> int -> point
+  val new': int * int -> point
+  val map: (int * int -> 'a) -> point -> 'a
+  val compare: point * point -> order
+  val map2: (int * int -> 'a) -> (int * int -> 'b) -> point -> point -> 'a * 'b
+  val map2p: (int * int -> int) -> (int * int -> int) -> point -> point -> point
+  val manhattan: point -> point -> int
+  val dist: point -> point -> int
+  val distToOrigin: point -> int
+  val move: point -> point -> point
+  val slope: point -> point -> real
+  val onSameSlopeToOrigin: point -> point -> bool
+  val pi: point -> int
+  val pi': int -> point
+  val pointsInSquare: int -> point -> point list
+  datatype quad = I | II | III | IV | XP | XN | YP | YN | O
+  val quadOf: point -> quad
+  val inSameQuadrant: point -> point -> bool
+end
 
-  fun new (x : int) (y : int) : point = {x=x, y=y}
+structure Point: POINT = struct
+  type point = {x : int, y : int}
+  val origin = {x=0, y=0}
+
+  fun new x y = {x=x, y=y}
   fun new' (x, y) = new x y
 
-  fun map (f : int * int -> 'a) (p : point) : 'a =
+  fun map f p =
     let val {x, y} = p
     in f (x, y)
     end
 
-  fun compare (p1 : point, p2 : point) : order =
+  fun compare (p1, p2) =
     map (fn (x, y) =>
     map (fn (x', y') => case Int.compare (x, x')
                           of EQUAL => Int.compare(y, y')
@@ -18,12 +41,7 @@ structure Point = struct
     p2)
     p1
 
-  fun map2
-    (fx : int * int -> 'a)
-    (fy : int * int -> 'b)
-    (p1 : point)
-    (p2 : point)
-    : 'a * 'b =
+  fun map2 fx fy p1 p2 =
     let
       val {x, y} = p1
       val {x=x', y=y'} = p2
@@ -37,7 +55,7 @@ structure Point = struct
     in new x' y'
     end
 
-  fun manhattan (p1 : point) (p2 : point) : int =
+  fun manhattan p1 p2 =
     let val lineLength = abs o (op -)
         val (dx, dy) = map2 lineLength lineLength p1 p2
     in dx + dy
@@ -46,17 +64,17 @@ structure Point = struct
   val dist = manhattan
   val distToOrigin = dist origin
 
-  fun move (p : point) (dir : point) : point =
+  fun move p dir =
     let val (x', y') = map2 (op +) (op +) p dir
     in new x' y'
     end
 
-  fun slope (p1 : point) (p2 : point) : real =
+  fun slope p1 p2 =
     let val (dx, dy) = map2 (op -) (op -) p1 p2
     in real dy / real dx
     end
 
-  fun onSameSlopeToOrigin (p1 : point) (p2 : point) : bool =
+  fun onSameSlopeToOrigin p1 p2 =
     map (fn (x1, y1) =>
     map (fn (x2, y2) =>
       (* y - y1 = (Δy/Δx) (x - x1) + c ; let y,x,c=0 and solve *)
@@ -66,8 +84,8 @@ structure Point = struct
 
   (* the cantor pairing function
    * https://en.wikipedia.org/wiki/Pairing_function *)
-  val pi : point -> int = map (fn (x, y) => ((x + y) * (x + y + 1)) div 2 + y)
-  fun pi' (n : int) : point =
+  val pi = map (fn (x, y) => ((x + y) * (x + y + 1)) div 2 + y)
+  fun pi' n =
     let
       val w = floor ((Math.sqrt (real (8 * n + 1)) - 1.0) / 2.0)
       val t = (w * w + w) div 2
@@ -77,7 +95,7 @@ structure Point = struct
       new x y
     end
 
-  fun pointsInSquare (size : int) (topleft : point) : point list =
+  fun pointsInSquare size topleft =
     List.concat
     (map (fn (x, y) =>
         List.tabulate (size, fn x' =>
@@ -86,7 +104,7 @@ structure Point = struct
         topleft)
 
   datatype quad = I | II | III | IV | XP | XN | YP | YN | O
-  val quadOf : point -> quad =
+  val quadOf =
     map (fn (x, y) => case (Int.sign x, Int.sign y)
                         of (0,0) => O
                          | (1,0) => XP
@@ -98,11 +116,24 @@ structure Point = struct
                          | (0,~1) => YN
                          | (1,~1) => IV)
 
-  fun inSameQuadrant (p1 : point) (p2 : point) : bool = quadOf p1 = quadOf p2
+  fun inSameQuadrant p1 p2 = quadOf p1 = quadOf p2
 
 end
 
-structure PointN = struct
+signature POINTN = sig
+  type pointN
+  val dim: pointN -> int
+  val origin: int -> pointN
+  val new: int -> int list -> pointN
+  val map: (int * int -> int) -> pointN -> int option
+  val map': (int -> 'a) list -> pointN -> 'a list
+  val map2: (int * int -> 'a) list -> pointN -> pointN -> 'a list
+  val map2': (int * int -> 'a) -> pointN -> pointN -> 'a list
+  val move: pointN -> pointN -> pointN
+  val compare: pointN * pointN -> order
+end
+
+structure PointN: POINTN = struct
   type pointN = int list
 
   val dim = List.length
