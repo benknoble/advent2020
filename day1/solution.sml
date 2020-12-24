@@ -1,4 +1,13 @@
-structure Solution = struct
+signature DAY1 = sig
+  val target: int
+  val solve: int -> int list -> int
+  val part1': int list -> int
+  val part1: string -> int
+  val part2': int list -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY1 = struct
   val target = 2020
   fun solve n entries =
     let
