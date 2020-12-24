@@ -1,4 +1,38 @@
-structure Code = struct
+signature CODE = sig
+  datatype instruction = Acc of int | Jmp of int | Nop of int | HaltOp
+  type code
+  type pc
+  type acc
+
+  val swap: pc -> (instruction -> instruction) -> code -> code
+  datatype process = Running of acc * pc * code
+                   | Halt of acc
+                   | PcErr of pc * code
+
+  val decode: acc * pc * code -> instruction option
+
+  val acc: int -> acc * pc * code -> process
+  val jmp: int -> acc * pc * code -> process
+  val nop: acc * pc * code -> process
+  val halt: acc * pc * code -> process
+
+  val eval: instruction -> acc * pc * code -> process
+  val step: process -> process
+
+  val load: code -> process
+  val run: process -> process
+  val interpret: code -> process
+
+  val stopped: process -> bool
+
+  structure Reader: sig
+    val instp: (instruction, 'strm) ParserComb.parser
+    val codep: (code, 'strm) ParserComb.parser
+    val code: string -> code option
+  end
+end
+
+structure Code: CODE = struct
 
   datatype instruction = Acc of int
                        | Jmp of int
