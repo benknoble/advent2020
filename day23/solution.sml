@@ -110,7 +110,7 @@ structure Solution = struct
 
   fun moveN n cups =
     if n = 0 then cups
-    else (print ((Int.toString n) ^ "\n"); moveN (n-1) (move cups))
+    else moveN (n-1) (move cups)
 
   fun cupsToList (cups, current) =
     let
