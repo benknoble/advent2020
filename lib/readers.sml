@@ -19,6 +19,7 @@ signature PARSEROPS = sig
   val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option
 
   val anyc: (char, 'strm) PC.parser
+  val anything: (char list, 'strm) PC.parser
 
   val stop: 'a list -> 'b -> ('b, 'strm) PC.parser
   val finish: ('a, 'strm) PC.parser -> ('a, 'strm) PC.parser
