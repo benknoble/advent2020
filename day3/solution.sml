@@ -1,4 +1,20 @@
-structure Solution = struct
+signature DAY3 = sig
+  datatype terrain = Space | Tree
+  val toboggan_map_reader: string -> terrain PointMap.map
+  val find_top_right: Point.point list -> Point.point
+  val horizontally_wrapped_pos: Point.point -> Point.point -> Point.point
+  val terrain_along_slope: terrain PointMap.map -> Point.point -> Point.point -> terrain list
+  val read_map: string -> terrain PointMap.map
+  val count_trees: Point.point -> terrain PointMap.map -> int
+
+  val part1': terrain PointMap.map -> int
+  val part1: string -> int
+
+  val part2': terrain PointMap.map -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY3 = struct
   datatype terrain = Space | Tree
 
   val toboggan_map_reader =
