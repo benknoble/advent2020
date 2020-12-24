@@ -1,4 +1,57 @@
-structure Readers = struct
+signature MAP_READER = sig
+  val fromString: ('a * Point.point * 'b -> 'a) -> 'a -> (char -> 'b option) -> string -> 'a
+end
+
+signature PARSEROPS = sig
+  structure PC: PARSER_COMB
+  val $> : ('a, 'strm) PC.parser * ('a -> 'b) -> ('b, 'strm) PC.parser
+  val +> : ('a, 'strm) PC.parser * ('b, 'strm) PC.parser -> ('a * 'b, 'strm) PC.parser
+  val >> : ('a, 'strm) PC.parser * ('a -> ('b, 'strm) PC.parser) -> ('b, 'strm) PC.parser
+  val || : ('a, 'strm) PC.parser * ('a, 'strm) PC.parser -> ('a, 'strm) PC.parser
+  val ||| : ('a, 'strm) PC.parser list -> ('a, 'strm) PC.parser
+  val ?+ : ('a, 'strm) PC.parser -> ('a list, 'strm) PC.parser
+  val ++ : ('a, 'strm) PC.parser -> ('a list, 'strm) PC.parser
+  val ?? : ('a, 'strm) PC.parser -> ('a option, 'strm) PC.parser
+  val !! : ('a option, 'strm) PC.parser -> ('a, 'strm) PC.parser
+
+  val skip_ws: ('a, 'strm) PC.parser -> ('a, 'strm) PC.parser
+
+  val prun: ('a, StringCvt.cs) PC.parser -> string -> 'a option
+
+  val anyc: (char, 'strm) PC.parser
+
+  val stop: 'a list -> 'b -> ('b, 'strm) PC.parser
+  val finish: ('a, 'strm) PC.parser -> ('a, 'strm) PC.parser
+
+  val digitp: (char, 'strm) PC.parser
+  val hexdigitp: (char, 'strm) PC.parser
+  val decp: (int, 'strm) PC.parser
+  val hexp: (int, 'strm) PC.parser
+
+  val mkint: char list -> int
+  val mkhex: char list -> int
+end
+
+signature DICT_READER = sig
+  val kvp: (Atom.atom * string, 'strm) ParserComb.parser
+end
+
+signature READERS = sig
+  val collect_t: (string -> 'a option) -> string list -> 'a list
+  val on_char: char -> string -> string list
+  val on_chars: char list -> string -> string list
+  val on_spaces: string -> string list
+  val lines: string -> string list
+  val all: TextIO.instream -> TextIO.vector
+  val file: string -> TextIO.instream
+  val file_to_int_list: string -> int list
+  val blank_line_sep_records: string -> string list
+  structure Map: MAP_READER
+  structure ParserOps: PARSEROPS
+  structure Dict: DICT_READER
+end
+
+structure Readers: READERS = struct
 
   fun collect_t t_to_string = List.mapPartial t_to_string
   fun on_char c = String.tokens (Lambda.is c)
