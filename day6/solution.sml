@@ -1,4 +1,28 @@
-structure Solution = struct
+signature DAY6 = sig
+  type answer
+  type individual_answers
+  type group
+  type group_answers
+
+  val individual_answers: answer -> individual_answers
+  val group_answers: (group_answers * group_answers -> group_answers) -> group_answers list -> group_answers
+
+  structure Form: sig
+    val answerp': (individual_answers, 'strm) ParserComb.parser
+    val groupp': (group_answers * group_answers -> group_answers) -> (group_answers, 'strm) ParserComb.parser
+
+    val answerp: string -> individual_answers option
+    val groupp: (group_answers * group_answers -> group_answers) -> string -> group_answers option
+
+    val forms: (group_answers * group_answers -> group_answers) -> string -> group_answers option list
+  end
+
+  val part1': group_answers list -> int
+  val part1: string -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY6 = struct
 
   structure CharSet = CharMap'.KeySet
 
