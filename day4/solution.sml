@@ -1,4 +1,39 @@
-structure Solution = struct
+signature PASSPORT_READER = sig
+  val pp': (string Dict.map, 'strm) ParserComb.parser
+  val pp: string -> string Dict.map list
+  val yr: (int, 'strm) ParserComb.parser
+  datatype height = CM of int | IN of int
+  val hgt: (height, 'strm) ParserComb.parser
+  val hcl: (int, 'strm) ParserComb.parser
+  val ecl: (string, 'strm) ParserComb.parser
+  val pid: (int, 'strm) ParserComb.parser
+end
+
+signature DAY4 = sig
+  structure Passport: PASSPORT_READER
+  val requiredSubset: Dict.KeySet.set
+  val isValid: 'a Dict.map -> bool
+
+  val part1': 'a Dict.map list -> int
+  val part1: string -> int
+
+  val fail_is_false: ('a, StringCvt.cs) ParserComb.parser -> ('a -> bool) -> string -> bool
+  val byrValid: string * (string -> bool)
+  val iyrValid: string * (string -> bool)
+  val eyrValid: string * (string -> bool)
+  val hgtValid: string * (string -> bool)
+  val hclValid: string * (string -> bool)
+  val eclValid: string * (string -> bool)
+  val pidValid: string * (string -> bool)
+  val checks: (string * (string -> bool)) list
+  val run_check: string Dict.map -> string * (string -> bool) -> bool
+  val allValid: string Dict.map -> bool
+
+  val part2': string Dict.map list -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY4 = struct
 
   structure Passport = struct
     open Readers.ParserOps
