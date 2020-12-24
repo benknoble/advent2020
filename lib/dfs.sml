@@ -1,10 +1,20 @@
+signature DFS = sig
+  type edge
+  type graph
+  structure Node: ORD_KEY
+  structure NodeMap: ORD_MAP where type Key.ord_key = Node.ord_key
+  structure NodeEdgeSet: ORD_SET where type Key.ord_key = edge * Node.ord_key
+
+  val dfs: graph -> Node.ord_key -> NodeEdgeSet.set
+end
+
 functor DfsFn(
   type edge
   type graph
   structure Node: ORD_KEY
   val neighbors: graph -> Node.ord_key -> (edge * Node.ord_key) list
   val nodes: graph -> Node.ord_key list
-) = struct
+): DFS = struct
 
   structure Stack = struct
     type 'a stack = 'a list
@@ -13,6 +23,10 @@ functor DfsFn(
     val pop = List.getItem
     val isEmpty = List.null
   end
+
+  type edge = edge
+  type graph = graph
+  structure Node = Node
 
   datatype color = Discovered | Undiscovered
   structure NodeMap = RedBlackMapFn(Node)
