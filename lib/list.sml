@@ -1,4 +1,19 @@
-structure List' = struct
+signature LIST' = sig
+  val rep: int -> 'a -> 'a list
+  val combs: 'a list list -> 'a list list
+  val combs_of: ('a * 'b -> 'b) -> 'b -> 'a list list -> {parts: 'a list, res: 'b} list
+  val sum: int list -> int
+  val prod: int list -> int
+  val count_matching: ('a -> bool) -> 'a list -> int
+  val taking_while: ('a -> bool) -> 'a list -> 'a list list
+  val with_indices: 'a list -> (int * 'a) list
+  val transpose: 'a list list -> 'a list list
+  val takeWhile: ('a -> bool) -> 'a list -> 'a list * 'a list
+  val rotateLeft: 'a list -> 'a list
+  val index_of: ''a list -> ''a -> int option
+end
+
+structure List': LIST' = struct
   fun rep n x = List.tabulate (n, Lambda.k x)
 
   fun combs xss =
