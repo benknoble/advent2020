@@ -1,4 +1,13 @@
-structure Range = struct
+signature RANGE = sig
+  type range = {min: int, max: int}
+  val fromString: char -> string -> range option
+  val toList: range -> int list
+  val includes: range -> int -> bool
+  datatype bsp = Lower | Upper
+  val bsp: int -> bsp list -> int
+end
+
+structure Range: RANGE = struct
   type range = {min: int, max: int}
 
   fun fromString c str =
