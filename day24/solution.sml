@@ -56,15 +56,52 @@ structure Solution = struct
     val tiles = prun tilesp
   end
 
-  val part1' =
-    PointMap.numItems
-    o PointMap.filter (Lambda.is Black)
-    o List.foldl
-      (fn (loc, acc) =>
-        let val real_loc = ref_to_real loc
-        in acc %= (real_loc, flip (acc % real_loc))
-        end)
-      PointMap.empty
+  val flip_tiles =
+    List.foldl (fn (loc, acc) =>
+      let val real_loc = ref_to_real loc
+      in acc %= (real_loc, flip (acc % real_loc))
+      end)
+    PointMap.empty
+
+  val count_black = PointMap.numItems o PointMap.filter (Lambda.is Black)
+
+  val part1' = count_black o flip_tiles
   val part1 = Option.map part1' o Tiles.tiles o Readers.all o Readers.file
+
+  val adjacent_dirs = List.map dir_to_point [E, SE, SW, W, NW, NE]
+  fun neighbors p = List.map (Point.move p) adjacent_dirs
+
+  fun all_neighbors floor =
+    (PointSet.fromList o List.concat o List.map neighbors o PointMap.listKeys)
+    floor
+
+  fun count_neighbors x floor =
+    List'.count_matching (Lambda.is x)
+    o List.map (fn p => floor % p)
+    o neighbors
+
+  fun step floor =
+    PointSet.foldl (fn (p, floor') =>
+      floor' %= (p, let val black_neighbors = count_neighbors Black floor p
+                    in case floor % p
+                         of Black =>
+                              if black_neighbors = 0 orelse black_neighbors > 2
+                              then White
+                              else Black
+                          | White =>
+                              if black_neighbors = 2
+                              then Black
+                              else White
+                    end))
+    PointMap.empty
+    (all_neighbors floor)
+
+  fun stepN n floor =
+    if n = 0
+    then floor
+    else stepN (n-1) (step floor)
+
+  val part2' = count_black o (stepN 100) o flip_tiles
+  val part2 = Option.map part2' o Tiles.tiles o Readers.all o Readers.file
 
 end
