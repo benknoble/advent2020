@@ -74,4 +74,43 @@ structure Solution = struct
 
   val part1 = Option.map part1' o Foods.foods o Readers.all o Readers.file
 
+  fun solve_eqns m =
+    if AtomMap.all (Lambda.is 1 o AtomSet.numItems) m
+    then SOME (AtomMap.map AtomSet.minItem m)
+    else
+      let
+        val fixed =
+          AtomMap.foldl AtomSet.union AtomSet.empty
+          (AtomMap.filter (Lambda.is 1 o AtomSet.numItems) m)
+      in
+        if AtomSet.isEmpty fixed
+        then NONE
+        else
+          let
+            val sans_fixed =
+              AtomMap.map
+              (fn xs => if AtomSet.numItems xs = 1
+                        then xs
+                        else AtomSet.difference (xs, fixed))
+              m
+          in
+            if AtomMap.exists AtomSet.isEmpty sans_fixed
+            then NONE
+            else solve_eqns sans_fixed
+          end
+      end
+
+  val order_allergen_ingredients: ingredient AtomMap.map -> (allergen * ingredient) list =
+    ListMergeSort.sort (Lambda.is GREATER o Atom.lexCompare o (fn ((k1, _), (k2, _)) => (k1, k2)))
+    o AtomMap.listItemsi
+
+  val part2' =
+    Option.map (String.concatWith ","
+                o List.map (Atom.toString o #2)
+                o order_allergen_ingredients)
+    o solve_eqns
+    o allergens_to_possible_ingredients
+
+  val part2 = Option.mapPartial part2' o Foods.foods o Readers.all o Readers.file
+
 end
