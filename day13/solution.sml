@@ -1,4 +1,25 @@
-structure Solution = struct
+signature DAY13 = sig
+  structure Timetable: sig
+    val earliestp: (int, 'strm) ParserComb.parser
+    val idp: (int option, 'strm) ParserComb.parser
+    val idsp: (int option list, 'strm) ParserComb.parser
+    val timetablep: (int * int option list, 'strm) ParserComb.parser
+    val timetable: string -> (int * int option list) option
+  end
+
+  val next_multiple: int -> int -> int
+  val next_bus: int -> int list -> {bus: int, arrival: int} option
+
+  val part1': int -> int list -> int option
+  val part1: string -> int option
+
+  val congruences: int option list -> (int * int) list
+
+  val part2': int option list -> int
+  val part2: string -> int option
+end
+
+structure Solution: DAY13 = struct
 
   structure Timetable = struct
     open Readers.ParserOps
