@@ -1,4 +1,33 @@
-structure Solution = struct
+signature DAY10 = sig
+  type adapter
+  type chain
+  val start: adapter
+
+  val mk_chain: int list -> chain
+  val mk_seat_chain: int list -> chain
+
+  datatype difference = One | Two | Three | Other
+  val add_d: difference * difference -> difference
+
+  val differences: chain -> difference list
+
+  val valid_differences: difference list -> bool
+  val valid_chain: chain -> bool
+
+  val count_differences: chain -> int * int * int
+
+  val part1': chain -> int
+  val part1: string -> int option
+
+  val trib: int -> int
+
+  val valid_combs': difference list -> int
+  val valid_combs: chain -> int
+  val part2': chain -> int
+  val part2: string -> int option
+end
+
+structure Solution: DAY10 = struct
 
   type adapter = int
   type chain = adapter list
