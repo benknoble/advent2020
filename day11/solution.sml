@@ -1,6 +1,36 @@
-structure Solution = struct
+signature DAY11 = sig
+  datatype seat = Floor | Empty | Occupied
+  type seats
+  val seat_map_reader: string -> seats
+  val read_map: string -> seats
+
+  val prints: seats -> unit
+
+  val directions: Point.point list
+
+  val neighbors: seats -> Point.point -> seat list
+
+  val count_occupied: seat list -> int
+
+  val next: seats -> seats
+
+  val equivalent_seat_maps: seats * seats -> bool
+
+  val part1': seats -> int
+  val part1: string -> int
+
+  val visible: seats -> Point.point -> seat list
+
+  val next': seats -> seats
+
+  val part2': seats -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY11 = struct
 
   datatype seat = Floor | Empty | Occupied
+  type seats = seat PointMap.map
 
   val seat_map_reader =
     let val seat_map = CharMap'.fromList [ (#".", Floor)
