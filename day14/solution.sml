@@ -1,4 +1,49 @@
-structure Solution = struct
+signature DAY14 = sig
+  type value
+  type mem
+  datatype mask_bit = X | One | Zero
+  type pos_mask
+  type mask
+
+  val from_bin: int list -> IntInf.int
+  val onem: pos_mask -> IntInf.int
+  val zerom: pos_mask -> IntInf.int
+
+  val mask_value: value -> mask -> value
+  val mask_address: IntInf.int -> mask -> IntInf.int list
+
+  datatype instruction = Mask of mask
+                       | MemWrite of int * value
+
+  type program
+  type process
+
+  val init_mem: mem
+  val init_mask: mask
+
+  type maskf = mask -> mem -> int -> value -> mask * mem
+  val maskf1: maskf
+  val maskf2: maskf
+
+  val step: maskf -> instruction * (mask * mem) -> (mask * mem)
+  val load: program -> process
+  val run: maskf -> process -> (mask * mem)
+
+  structure Docking: sig
+    val memwritep: (instruction, 'strm) ParserComb.parser
+    val maskp: (instruction, 'strm) ParserComb.parser
+    val progp: (program, 'strm) ParserComb.parser
+    val prog: string -> program option
+  end
+
+  val part1': program -> IntInf.int
+  val part1: string -> IntInf.int option
+
+  val part2': program -> IntInf.int
+  val part2: string -> IntInf.int option
+end
+
+structure Solution: DAY14 = struct
 
   type value = IntInf.int
   type mem = value IntRedBlackMap.map
@@ -49,6 +94,8 @@ structure Solution = struct
 
   val init_mem: mem = IntRedBlackMap.empty
   val init_mask: mask = {zeros=[], ones=[], xs=[]}
+
+  type maskf = mask -> mem -> int -> value -> mask * mem
 
   fun maskf1 mask mem k v =
     (mask, IntRedBlackMap.insert (mem, k, mask_value v mask))
