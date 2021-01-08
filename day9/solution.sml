@@ -1,4 +1,25 @@
-structure Solution = struct
+signature DAY9 = sig
+  type window
+  type data = int list
+  type decode_data
+
+  val validw: window -> bool
+  val next: decode_data -> decode_data option
+
+  datatype valid = Valid | Invalid of int
+  val valid: decode_data -> valid
+  val init: data -> decode_data
+
+  val part1': data -> valid
+  val part1: string -> valid
+
+  val css: int list -> int -> int list option
+
+  val part2': data -> int option
+  val part2: string -> int option
+end
+
+structure Solution: DAY9 = struct
   (* #1 = queue holding window contents
    *      from it we calculate the "head" of the window to remove by dequeueing,
    *      and the new window by enqueueing #3
