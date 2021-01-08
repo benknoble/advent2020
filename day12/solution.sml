@@ -1,4 +1,60 @@
-structure Solution = struct
+signature DAY12 = sig
+  datatype direction = North | South | East | West
+  datatype rotation = Quarter | Half | ThreeQuarter
+  datatype action = N of int
+                  | S of int
+                  | E of int
+                  | W of int
+                  | L of rotation
+                  | R of rotation
+                  | F of int
+
+  type boat
+  type nav
+
+  val init: boat
+
+  val rotateL: direction -> rotation -> direction
+  val rotateR: direction -> rotation -> direction
+
+  val step: boat -> action -> boat
+  val run: boat -> nav -> boat
+
+  structure Navigation: sig
+    val n: (int -> action, 'strm) ParserComb.parser
+    val s: (int -> action, 'strm) ParserComb.parser
+    val e: (int -> action, 'strm) ParserComb.parser
+    val w: (int -> action, 'strm) ParserComb.parser
+    val f: (int -> action, 'strm) ParserComb.parser
+
+    val nsewf: (action, 'strm) ParserComb.parser
+
+    val l: (rotation -> action, 'strm) ParserComb.parser
+    val r: (rotation -> action, 'strm) ParserComb.parser
+
+    val lr: (action, 'strm) ParserComb.parser
+
+    val navp: (action list, 'strm) ParserComb.parser
+
+    val nav: string -> action list option
+  end
+
+  val part1': nav -> int
+  val part1: string -> int option
+
+  type boat'
+  val init': boat'
+
+  val rotateL': Point.point -> rotation -> Point.point
+  val rotateR': Point.point -> rotation -> Point.point
+
+  val step': boat' -> action -> boat'
+  val run': boat' -> nav -> boat'
+  val part2': nav -> int
+  val part2: string -> int option
+end
+
+structure Solution: DAY12 = struct
 
   datatype direction = North | South | East | West
   datatype rotation = Quarter | Half | ThreeQuarter
