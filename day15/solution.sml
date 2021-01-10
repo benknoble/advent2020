@@ -1,4 +1,20 @@
-structure Solution = struct
+signature DAY15 = sig
+  structure Seed: sig
+    val seedp: (int list, 'strm) ParserComb.parser
+    val seed: string -> int list option
+  end
+
+  val mem_game_step: int * (int * int IntRedBlackMap.map) -> int * int IntRedBlackMap.map
+  val mem_game: int list -> int -> int * int IntRedBlackMap.map
+
+  val part1': int list -> int * int IntRedBlackMap.map
+  val part1: string -> (int * int IntRedBlackMap.map) option
+
+  val part2': int list -> int * int IntRedBlackMap.map
+  val part2: string -> (int * int IntRedBlackMap.map) option
+end
+
+structure Solution: DAY15 = struct
 
   structure Seed = struct
     open Readers.ParserOps
