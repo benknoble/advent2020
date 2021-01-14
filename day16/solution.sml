@@ -1,4 +1,43 @@
-structure Solution = struct
+signature DAY16 = sig
+  type field
+  type value
+  type ticket
+  datatype range = Range of Range.range
+                 | Or of range * range
+  type rule
+  type tickets
+
+  structure Tickets: sig
+    val fieldp: (string, 'strm) ParserComb.parser
+    val rangep: (range, 'strm) ParserComb.parser
+    val rulep: (rule, 'strm) ParserComb.parser
+    val rulesp: (rule list, 'strm) ParserComb.parser
+    val ticketp: (ticket, 'strm) ParserComb.parser
+    val ticketsp': (ticket list, 'strm) ParserComb.parser
+    val ticketsp: (tickets, 'strm) ParserComb.parser
+    val tickets: string -> tickets option
+  end
+
+  val range_valid: range -> value -> bool
+  val rule_valid: rule -> value -> bool
+  val valid_for_any: rule list -> value -> bool
+  val rule_invalid: rule -> value -> bool
+  val invalid_for_all: rule list -> value -> bool
+
+  val part1': tickets -> int
+  val part1: string -> int option
+
+  structure RuleSet: ORD_SET where type Key.ord_key = rule
+
+  val valid_for_all: rule list -> value list -> RuleSet.set
+
+  val solve_set_eqns: RuleSet.set list -> rule list option
+
+  val part2': tickets -> int option
+  val part2: string -> int option option
+end
+
+structure Solution: DAY16 = struct
   type field = string
   type value = int
   type ticket = value list
@@ -91,9 +130,9 @@ structure Solution = struct
   (* cands is a list of sets, so acts like the mapping
    * index -> {possible rules}
    * we want to find the mapping
-   * rule -> index
+   * index -> rule
    * if it exists such that every rule has a unique index and every index has a
-   * unique index
+   * unique rule
    * the result is a list of rules *)
   fun solve_set_eqns cands =
     (* all singletons, solved *)
