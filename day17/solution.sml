@@ -1,4 +1,30 @@
-structure Solution = struct
+signature DAY17 = sig
+  datatype cube = Active | Inactive
+  val cube_reader: int -> string -> cube PointNMap.map
+  val read_map: int -> string -> cube PointNMap.map
+
+  val directions: int -> PointN.pointN list
+  val neighbors: int -> PointN.pointN -> PointN.pointN list
+
+  val count_active: cube PointNMap.map -> PointN.pointN list -> int
+
+  val next_active: int -> cube PointNMap.map -> PointN.pointN -> cube
+  val next_inactive: int -> cube PointNMap.map -> PointN.pointN -> cube
+  val next: int -> cube PointNMap.map -> cube PointNMap.map
+
+  val run: int -> int -> cube PointNMap.map -> cube PointNMap.map
+
+  val partn': int -> cube PointNMap.map -> int
+  val partn: int -> string -> int
+
+  val part1': cube PointNMap.map -> int
+  val part1: string -> int
+
+  val part2': cube PointNMap.map -> int
+  val part2: string -> int
+end
+
+structure Solution: DAY17 = struct
 
   datatype cube = Active | Inactive
   fun cube_reader n =
