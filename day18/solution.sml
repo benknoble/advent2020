@@ -1,4 +1,43 @@
-structure Solution = struct
+signature DAY18 = sig
+  datatype expr = Num of int
+                | Add of expr * expr
+                | Mult of expr * expr
+
+  val eval_expr: expr -> int
+
+  structure BasicMath: sig
+    val nump: (expr, 'strm) ParserComb.parser
+    val basep: (expr, 'strm) ParserComb.parser
+    val parenp: (expr, 'strm) ParserComb.parser
+    val addp: ((expr * expr -> expr) * expr, 'strm) ParserComb.parser
+    val multp: ((expr * expr -> expr) * expr, 'strm) ParserComb.parser
+    val exprp': (((expr * expr -> expr) * expr) list, 'strm) ParserComb.parser
+    val exprp: (expr, 'strm) ParserComb.parser
+    val exprsp: (expr list, 'strm) ParserComb.parser
+
+    val exprs: string -> expr list option
+  end
+
+  structure AdvancedMath: sig
+    val exprp: (expr, 'strm) ParserComb.parser
+    val termp: (expr, 'strm) ParserComb.parser
+    val multp: (expr, 'strm) ParserComb.parser
+    val addp: (expr, 'strm) ParserComb.parser
+    val basep: (expr, 'strm) ParserComb.parser
+    val parenp: (expr, 'strm) ParserComb.parser
+    val exprsp: (expr list, 'strm) ParserComb.parser
+
+    val exprs: string -> expr list option
+  end
+
+  val sum_expr: expr list -> int
+  val part: (string -> expr list option) -> string -> int option
+
+  val part1: string -> int option
+  val part2: string -> int option
+end
+
+structure Solution: DAY18 = struct
 
   datatype expr = Num of int
                 | Add of expr * expr
