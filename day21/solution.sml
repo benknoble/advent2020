@@ -1,4 +1,47 @@
-structure Solution = struct
+signature DAY21 = sig
+  type ingredient
+  type allergen
+  type ingredients
+  type allergens
+  type food
+  type foods
+
+  type 'a allergenMap
+
+  structure Foods: sig
+    val ingredientp: (ingredient, 'strm) ParserComb.parser
+    val ingredientsp: (ingredients, 'strm) ParserComb.parser
+
+    val allergenp: (allergen, 'strm) ParserComb.parser
+    val allergensp: (allergens, 'strm) ParserComb.parser
+
+    val foodp: (food, 'strm) ParserComb.parser
+    val foodsp: (foods, 'strm) ParserComb.parser
+
+    val foods: string -> foods option
+  end
+
+  val ingredients: foods -> ingredients
+  val allergens: foods -> allergens
+
+  val ingredients_possibly_containing: allergen -> foods -> ingredients
+  val allergens_to_possible_ingredients: foods -> ingredients allergenMap
+  val might_be_allergens: foods -> ingredients
+  val cannot_be_allergens: foods -> ingredients
+
+  val count_uses: ingredient -> foods -> int
+
+  val part1': foods -> int
+  val part1: string -> int option
+
+  val solve_eqns: ingredients allergenMap -> ingredient allergenMap option
+  val order_allergen_ingredients: ingredient allergenMap -> (allergen * ingredient) list
+
+  val part2': foods -> string option
+  val part2: string -> string option
+end
+
+structure Solution: DAY21 = struct
 
   type ingredient = Atom.atom
   type allergen = Atom.atom
@@ -6,6 +49,8 @@ structure Solution = struct
   type allergens = AtomSet.set
   type food = {ingredients: ingredients, allergens: allergens}
   type foods = food list
+
+  type 'a allergenMap = 'a AtomMap.map
 
   structure Foods = struct
     open Readers.ParserOps
@@ -100,7 +145,7 @@ structure Solution = struct
           end
       end
 
-  val order_allergen_ingredients: ingredient AtomMap.map -> (allergen * ingredient) list =
+  val order_allergen_ingredients: ingredient allergenMap -> (allergen * ingredient) list =
     ListMergeSort.sort (Lambda.is GREATER o Atom.lexCompare o (fn ((k1, _), (k2, _)) => (k1, k2)))
     o AtomMap.listItemsi
 
