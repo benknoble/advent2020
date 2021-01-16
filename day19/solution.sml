@@ -2,6 +2,10 @@ signature DAY19 = sig
   datatype rule = Char of char
                 | Alt of int list * int list
   type rules
+  type tracker
+
+  val <+=> : tracker * (int * int) -> tracker
+  val <+> : tracker * tracker -> tracker
 
   structure Data: sig
     val labelp: (int, 'strm) ParserComb.parser
@@ -15,26 +19,23 @@ signature DAY19 = sig
     val run_rulep:
       int
       -> rules
-      -> (int IntRedBlackMap.map * int
-        -> (int IntRedBlackMap.map, 'strm) ParserComb.parser option)
-      -> int IntRedBlackMap.map
-      -> (int IntRedBlackMap.map, 'strm) ParserComb.parser
+      -> (tracker * int -> (tracker, 'strm) ParserComb.parser option)
+      -> tracker
+      -> (tracker, 'strm) ParserComb.parser
 
     val run_rule:
       int
       -> rules
-      -> (int IntRedBlackMap.map * int
-        -> (int IntRedBlackMap.map, StringCvt.cs) ParserComb.parser option)
-      -> int IntRedBlackMap.map
+      -> (tracker * int -> (tracker, StringCvt.cs) ParserComb.parser option)
+      -> tracker
       -> string
-      -> int IntRedBlackMap.map option
+      -> tracker option
 
     val accepts:
       int
       -> rules
-      -> (int IntRedBlackMap.map * int
-        -> (int IntRedBlackMap.map, StringCvt.cs) ParserComb.parser option)
-      -> int IntRedBlackMap.map
+      -> (tracker * int -> (tracker, StringCvt.cs) ParserComb.parser option)
+      -> tracker
       -> string
       -> bool
 
@@ -52,7 +53,7 @@ signature DAY19 = sig
   val re_accepts: int -> rules -> string -> bool
   val find_differences: (rules * string list) -> (int * bool * bool) list
 
-  val printMap: int IntRedBlackMap.map -> unit
+  val printMap: tracker -> unit
 
   val part1': (rules * string list) -> int
   val part1: string -> int option
@@ -66,6 +67,12 @@ structure Solution: DAY19 = struct
   datatype rule = Char of char
                 | Alt of int list * int list
   type rules = rule IntRedBlackMap.map
+  type tracker = int IntRedBlackMap.map
+
+  val <+> = IntRedBlackMap.unionWith op+
+  infix <+>
+  fun <+=> (acc, (k, v)) = IntRedBlackMap.insertWith op+ (acc, k, v)
+  infix <+=>
 
   structure Data = struct
     open Readers.ParserOps
@@ -111,9 +118,7 @@ structure Solution: DAY19 = struct
       let
         fun run_seq rs' =
           List.foldl
-          (fn (curr, acc') =>
-            ((acc' +> (run_rulep curr rs extra acc))
-            $> (IntRedBlackMap.unionWith op+)))
+          (fn (curr, acc') => ((acc' +> (run_rulep curr rs extra acc)) $> op<+>))
           (PC.result acc)
           rs'
       in
@@ -123,7 +128,7 @@ structure Solution: DAY19 = struct
                (case IntRedBlackMap.lookup (rs, n)
                   of Char c =>
                        (PC.char c
-                       $> Lambda.k (IntRedBlackMap.insertWith op+ (acc, n, 1)))
+                       $> Lambda.k (acc <+=> (n, 1)))
                        getc
                    | Alt (r1s, r2s) =>
                        ((case (List.length r1s, List.length r2s)
@@ -131,7 +136,7 @@ structure Solution: DAY19 = struct
                             | (0, _) => run_seq r2s
                             | (_, 0) => run_seq r1s
                             | (_, _) => (run_seq r1s) || (run_seq r2s))
-                            $> (fn acc' => IntRedBlackMap.insertWith op+ (acc', n, 1)))
+                            $> (fn acc' => acc' <+=> (n, 1)))
                             getc)
       end
 
@@ -220,9 +225,9 @@ structure Solution: DAY19 = struct
                   (((++ (Data.run_rulep 42 rs extra acc))
                     +> (++ (Data.run_rulep 31 rs extra acc)))
                   $> (fn (lefts, rights) =>
-                        IntRedBlackMap.unionWith op+
-                        ( List.foldl (IntRedBlackMap.unionWith op+) IntRedBlackMap.empty lefts
-                        , List.foldl (IntRedBlackMap.unionWith op+) IntRedBlackMap.empty rights)))
+                        List.foldl op<+> IntRedBlackMap.empty lefts
+                        <+>
+                        List.foldl op<+> IntRedBlackMap.empty rights))
                   getc)
             | _ => NONE
       end
