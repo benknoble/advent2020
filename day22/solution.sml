@@ -1,4 +1,40 @@
-structure Solution = struct
+signature DAY22 = sig
+  type deck
+  datatype winner = Player1 | Player2
+  datatype game = Game of deck * deck
+                | Over of deck * winner
+
+  structure Decks: sig
+    val deckp: (deck, 'strm) ParserComb.parser
+    val gamep: (game, 'strm) ParserComb.parser
+
+    val game: string -> game option
+  end
+
+  val p1wins: int * deck -> int * deck -> game
+  val p2wins: int * deck -> int * deck -> game
+  val round_winner: int * deck -> int * deck -> winner
+  val round_next: int * deck -> int * deck -> game
+  val step: game -> game
+  val play: game -> game
+  val score: game -> int
+
+  val part1': game -> int
+  val part1: string -> int option
+
+  structure GameMap: ORD_MAP_UTILS where type Key.ord_key = game
+  structure GameSet: ORD_SET where type Key.ord_key = game
+
+  val deck_take_n: int * deck -> deck
+  val can_recurse: int * deck -> int * deck -> bool
+  val stepR: GameSet.set -> game -> game
+  val playR: GameSet.set -> game -> game
+
+  val part2': game -> int
+  val part2: string -> int option
+end
+
+structure Solution: DAY22 = struct
 
   type deck = int list
   datatype winner = Player1 | Player2
