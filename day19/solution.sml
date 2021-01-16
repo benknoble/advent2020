@@ -1,4 +1,67 @@
-structure Solution = struct
+signature DAY19 = sig
+  datatype rule = Char of char
+                | Alt of int list * int list
+  type rules
+
+  structure Data: sig
+    val labelp: (int, 'strm) ParserComb.parser
+    val charp: (rule, 'strm) ParserComb.parser
+    val seqp: (int list, 'strm) ParserComb.parser
+    val altp: (rule, 'strm) ParserComb.parser
+    val rhsp: (rule, 'strm) ParserComb.parser
+    val rulep: (int * rule, 'strm) ParserComb.parser
+    val rulesp: (rules, 'strm) ParserComb.parser
+
+    val run_rulep:
+      int
+      -> rules
+      -> (int IntRedBlackMap.map * int
+        -> (int IntRedBlackMap.map, 'strm) ParserComb.parser option)
+      -> int IntRedBlackMap.map
+      -> (int IntRedBlackMap.map, 'strm) ParserComb.parser
+
+    val run_rule:
+      int
+      -> rules
+      -> (int IntRedBlackMap.map * int
+        -> (int IntRedBlackMap.map, StringCvt.cs) ParserComb.parser option)
+      -> int IntRedBlackMap.map
+      -> string
+      -> int IntRedBlackMap.map option
+
+    val accepts:
+      int
+      -> rules
+      -> (int IntRedBlackMap.map * int
+        -> (int IntRedBlackMap.map, StringCvt.cs) ParserComb.parser option)
+      -> int IntRedBlackMap.map
+      -> string
+      -> bool
+
+    val messagep: (string, 'strm) ParserComb.parser
+    val messagesp: (string list, 'strm) ParserComb.parser
+    val rules_messagesp: (rules * string list, 'strm) ParserComb.parser
+
+    val rules_messages: string -> (rules * string list) option
+  end
+
+  val to_re: rules -> int -> string
+
+  structure RE: REGEXP
+
+  val re_accepts: int -> rules -> string -> bool
+  val find_differences: (rules * string list) -> (int * bool * bool) list
+
+  val printMap: int IntRedBlackMap.map -> unit
+
+  val part1': (rules * string list) -> int
+  val part1: string -> int option
+
+  val part2': (rules * string list) -> int
+  val part2: string -> int option
+end
+
+structure Solution: DAY19 = struct
 
   datatype rule = Char of char
                 | Alt of int list * int list
