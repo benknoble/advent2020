@@ -1,4 +1,36 @@
-structure Solution = struct
+signature DAY23 = sig
+  type cups
+
+  val %= : 'a Array.array * (int * 'a) -> unit
+  val % : 'a Array.array * int -> 'a
+
+  val mk_circular: int list -> int Array.array
+  val mk_extended: int -> int list -> int Array.array
+
+  val cup_init: int option -> int list -> cups
+
+  structure Cups: sig
+    val cupsp: int option -> (cups, 'strm) ParserComb.parser
+    val cups: int option -> string -> cups option
+  end
+
+  val take3: cups -> int * int * int
+  val dest: int * int * int -> int -> int -> int
+  val place: int -> int * int * int -> cups -> unit
+  val move: cups -> cups
+  val moveN: int -> cups -> cups
+
+  val cupsToList: cups -> int list
+  val move_one_to_front: int list -> int list
+
+  val part1': cups -> string
+  val part1: string -> string option
+
+  val part2': cups -> int
+  val part2: string -> int option
+end
+
+structure Solution: DAY23 = struct
 
   (* cup -> next cup
    * current cup
