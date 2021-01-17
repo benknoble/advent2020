@@ -1,4 +1,47 @@
-structure Solution = struct
+signature DAY24 = sig
+  datatype color = Black | White
+  datatype dir = E | SE | SW | W | NW | NE
+
+  val flip: color -> color
+
+  type ref_loc
+  type real_loc
+
+  val dir_to_point: dir -> Point.point
+  val ref_to_real: ref_loc -> real_loc
+
+  type floor
+
+  val %= : floor * (Point.point * color) -> floor
+  val % : floor * Point.point -> color
+
+  structure Tiles: sig
+    val dirp: (dir, 'strm) ParserComb.parser
+    val ref_locp: (ref_loc, 'strm) ParserComb.parser
+    val tilesp: (ref_loc list, 'strm) ParserComb.parser
+    val tiles: string -> ref_loc list option
+  end
+
+  val flip_tiles: ref_loc list -> floor
+
+  val count_black: floor -> int
+
+  val part1': ref_loc list -> int
+  val part1: string -> int option
+
+  val adjacent_dirs: Point.point list
+  val neighbors: Point.point -> Point.point list
+  val all_neighbors: floor -> PointSet.set
+  val count_neighbors: color -> floor -> Point.point -> int
+
+  val step: floor -> floor
+  val stepN: int -> floor -> floor
+
+   val part2': ref_loc list -> int
+   val part2: string -> int option
+end
+
+structure Solution: DAY24 = struct
 
   datatype color = Black | White
   datatype dir = E | SE | SW | W | NW | NE
