@@ -2,6 +2,5 @@ Group
 is
   $/basis.cm
   $/smlnj-lib.cm
-  $/regexp-lib.cm
   ../lib/lib.cm
   solution.sml
