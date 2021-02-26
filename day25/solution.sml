@@ -1,7 +1,24 @@
 signature DAY25 = sig
+  val modulus: int
+  val base: int
+
+  val *% : int * int -> int
+
+  val search_loop_size: int -> int
+  val transform: int -> int -> int
+  val private_key: int * int -> int
+
+  structure PubKeys: sig
+    val pubkeyp: (int, 'strm) ParserComb.parser
+    val pubkeysp: (int * int, 'strm) ParserComb.parser
+    val pubkeys: string -> (int * int) option
+  end
+
+  val part1': int * int -> int
+  val part1: string -> int option
 end
 
-structure Solution(*: DAY25*) = struct
+structure Solution: DAY25 = struct
   val modulus = 20201227
   val base = 7
 
