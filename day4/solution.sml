@@ -129,7 +129,7 @@ structure Solution: DAY4 = struct
   fun allValid pp =
     isValid pp
     andalso
-    List.all Lambda.id (List.map (run_check pp) checks)
+    List.all (run_check pp) checks
 
   val part2' = List'.count_matching allValid
   val part2 = part2' o Passport.pp o Readers.all o Readers.file
